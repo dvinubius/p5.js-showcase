@@ -26,3 +26,7 @@ function draw() {
 		applyFade ? background.apply(undefined, _toConsumableArray(fader.color())) : background(bgCol);
 	}
 }
+
+function windowResized() {
+	resizeCanvas(windowWidth, windowHeight);
+}

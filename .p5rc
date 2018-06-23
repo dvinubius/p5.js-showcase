@@ -2,6 +2,8 @@
   "name": "collection_1",
   "projects": [
     "project1",
-    "project2"
+    "project2",
+    "project3",
+    "project4-color-mapping"
   ]
 }

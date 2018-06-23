@@ -23,3 +23,7 @@ function draw() {
 		applyFade ? background(...fader.color()) : background(bgCol);
 	}
 }
+
+function windowResized() {
+	resizeCanvas(windowWidth, windowHeight);
+}
