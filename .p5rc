@@ -1,9 +1,9 @@
 {
   "name": "collection_1",
   "projects": [
-    "project1",
-    "project2",
-    "project3",
-    "project4-color-mapping"
+    "1-cube-webGL",
+    "2-fade-paint",
+    "3-noise-symmetry",
+    "4-map-color"
   ]
 }

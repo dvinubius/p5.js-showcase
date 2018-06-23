@@ -10,12 +10,12 @@ function setup() {
 	createCanvas(windowWidth - 45, windowHeight);
 	background(bg.h, bg.s, bg.l);
 
-	colorMode(HSB, 100);
+	colorMode(HSB, 360, 100, 100, 1);
 }
 
 function draw() {
-	bg.h = 100 * (mouseX / width);
-	bg.l = 100 * (1 - mouseY / height);
+	bg.h = map(mouseX, 0, width, 0, 360);
+	bg.l = map(mouseY, 0, height, 100, 0);
 	background(bg.h, bg.s, bg.l);
 }
 
