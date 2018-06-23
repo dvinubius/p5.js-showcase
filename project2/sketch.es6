@@ -1,22 +1,18 @@
 let bgCol = [84, 200, 158];
-let baseFade = 0;
-let fadeFactor = baseFade;
 let mouseCol = [230,100,150,.9];
+let fader = new Fader(bgCol, 0 /*baseFade*/);
 let applyFade = true;
-let fader = new Fader(bgCol, baseFade);
 
 
 function setup() {
 	createCanvas(windowWidth, windowHeight);
 	background(...bgCol);
 	colorMode(RGB, 255, 255, 255, 1);
-	
-	console.log(fader);
+	fader.setMaxAlpha(1);
 }
 
 function draw() {
 	if (mouseIsPressed) {
-		resetFade();
 		fader.reset();
 		fill(...mouseCol);
 		stroke(10,20,30,.5);
@@ -24,23 +20,6 @@ function draw() {
 		stroke(100,100,100,.5);
 		line(mouseX, mouseY, pmouseX, pmouseY);
 	} else {
-		background(...bgFade());
-		incFade();
-		fader.inc();
+		applyFade ? background(...fader.color()) : background(bgCol);
 	}
-}
-
-function bgFade() {
-	if (!applyFade) {
-		return bgCol;
-	}
-	return [...bgCol,fadeFactor/500];
-}
-function incFade() {
-	if (fadeFactor < 500) {
-		fadeFactor++;
-	}
-}
-function resetFade() {
-	fadeFactor = baseFade;
 }
