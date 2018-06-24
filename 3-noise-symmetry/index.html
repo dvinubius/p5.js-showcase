@@ -22,8 +22,39 @@
 		canvas {
 			margin:auto;
 		}
+		.sidebar {
+      position: absolute;
+      width: 45px;
+      height: 100%;
+      min-height: 100px;
+      transform: translateX(-45px);
+      background-color:#f5f5f5;
+			box-sizing: content-box;
+      border-right: 1px solid hsla(0, 79%, 72%, 0.2);
+    }
+    .star {
+      position: absolute;
+      right: 4px;
+      top: 10px;
+      padding: 1px 6px;
+      background-color: transparent;
+      border: none;
+    }
+		.star:focus {
+			outline:none;
+		}
+    .star img {
+      width: 24px;
+    }
 	</style>
 </head>
 <body>
+  <div class="sidebar">
+    <button class="star">
+      <a href="/index.html">
+        <img src="/assets/star.png" alt="Home">
+      </a>
+    </button>
+  </div>
 </body>
 </html>
