@@ -14,7 +14,6 @@ function setup() {
 	background(bg.h, bg.s, bg.l);
 	textSize(14);
 	colorMode(HSB, 360, 100, 100, 1);
-	console.log('setup complete');
 }
 
 function draw() {
