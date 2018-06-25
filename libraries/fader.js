@@ -1,23 +1,23 @@
 ;(function Fader(context) {
-  const Fader = function(col, initialFactor, maxAlphaVal) {
+  const Fader = function(col, maxFadeFactor, decayRate, maxAlphaVal) {
     this.col = col;
-    this.initialFactor = initialFactor ? initialFactor : 0;
-    this._ffMax = 500;
+    this.maxOpaque = 1 - maxFadeFactor;
     this.maxAlphaVal = maxAlphaVal ? maxAlphaVal : 100;
-
+    this.decayRate = decayRate ? decayRate : 1;
     this.reset();
   }
   Fader.prototype.reset = function() {
-    this.fadeFactor = this.initialFactor;
+    this.fadeFactor = 0;
   }
   Fader.prototype.setMaxAlpha = function(val) {
     this.maxAlphaVal = val;
   }
   Fader.prototype.color = function() {
-    if (this.fadeFactor < this._ffMax) {
-      this.fadeFactor++;
+    if (this.fadeFactor < this.maxOpaque) {
+      this.fadeFactor += 0.0001 * this.decayRate;
     }
-    return this.col.concat([this.fadeFactor / this._ffMax * this.maxAlphaVal]);
+    const colWithAlpha = this.col.concat([this.fadeFactor * this.maxAlphaVal]);
+    return colWithAlpha;
   }
 
   // expose in window

@@ -48,4 +48,5 @@ function noiseVal() {
 
 function windowResized() {
 	resizeCanvas(windowWidth - 45, windowHeight);
+	background(0,0,0);
 }
