@@ -1,9 +1,9 @@
-let tileGrid;
 const neighbourhoodRad = 4;
-const backgroundCol = [30,0,10];
-const basicStrokeCol = [200,200,200];
-const highlightStrokeCol = [10,245,160];
-const illuminatorCol = [10,245,160];
+const backgroundCol = 			[30,0,10];
+const basicStrokeCol = 			[200,200,200];
+const highlightStrokeCol = 	[10,245,160];
+const illuminatorCol = 			[10,245,160];
+let tileGrid;
 const config = new TileGridConfig(
 	50 // gridSize - # of tiles per side ?
 	   // no tileSize - maximum sized, still fitting the screen decently
@@ -15,7 +15,7 @@ function setup() {
 }
 
 function draw() {
-	background(...backgroundCol);
+	background(backgroundCol);
 	if (!mouseOnEdge()) {
 		drawIlluminator();
 	}
@@ -48,9 +48,9 @@ function draw() {
 
 function createMyTileGrid() {
 	tileGrid = TileGrid.createInstance(config);
-	newGrid.applyEach(tile => tile.direction = floor(random(0,2)));
-	newGrid.applyEach(tile => tile.strokeWeight = 1);
-	newGrid.applyEach(tile => tile.strokeCol = basicStrokeCol);
+	tileGrid.applyEach(tile => tile.direction = floor(random(0,2)));
+	tileGrid.applyEach(tile => tile.strokeWeight = 1);
+	tileGrid.applyEach(tile => tile.strokeCol = basicStrokeCol);
 }
 
 function drawIlluminator() {
@@ -103,7 +103,7 @@ function windowResized() {
 function mouseWheel(event) {
 	let newSize = tileGrid.gridSize - event.delta/100;
 	if (newSize < 100 && newSize > 10) {
-		config.griddSize = newSize;
+		config.gridSize = newSize;
 		createMyTileGrid();
 	}
 }

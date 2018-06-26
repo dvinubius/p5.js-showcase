@@ -58,9 +58,9 @@
   TileGrid.prototype.isMouseInside = function(margin) {
     const marg = (margin === undefined) ? 0 : margin*this.tileSize;
   	return mouseX >= this.x - marg &&
-           mouseX < this.x + this.size*this.tileSize + marg &&
+           mouseX < this.x + this.gridSize*this.tileSize + marg &&
   				 mouseY >= this.y -marg &&
-           mouseY < this.y + this.size*this.tileSize + marg;
+           mouseY < this.y + this.gridSize*this.tileSize + marg;
   }
 
   TileGrid.prototype.neighbourhood = function(x,y,steps, circular) {
@@ -87,8 +87,8 @@
   }
 
   TileGrid.prototype.containsPos = function(x,y) {
-    return x >= 0 && x < this.size &&
-            y >= 0 && y < this.size;
+    return x >= 0 && x < this.gridSize &&
+            y >= 0 && y < this.gridSize;
   }
   TileGrid.prototype.isOnRadius = function(i,j,x,y,steps) {
     const c1x = (i + 1/2)*this.tileSize;
