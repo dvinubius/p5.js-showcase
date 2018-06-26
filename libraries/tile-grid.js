@@ -1,9 +1,20 @@
-;(function TileGrid(context) {
-  const TileGrid = function(size, xPos, yPos, tileSize) {
-    Grid.call(this, size, xPos, yPos);
+(function TileGridConfig(context) {
+  const TileGridConfig = function(gridSize, tileSize) {
+    this.gridSize = gridSize;
     this.tileSize = tileSize;
-    this.prototype = new Grid();
+  }
+  context.TileGridConfig = TileGridConfig;
+})(window);
 
+
+;(function TileGrid(context) {
+  const TileGrid = function(gridSize, xPos, yPos, tileSize) {
+    // inherit from grid
+    Grid.call(this, gridSize, xPos, yPos);
+    this.tileSize = tileSize;
+    this.length = this.gridSize * this.tileSize;
+
+    // inherit from Grid
     Object.setPrototypeOf(TileGrid.prototype, Grid.prototype);
 
     // init tiles
@@ -19,6 +30,20 @@
   	});
   };
 
+  TileGrid.createInstance = function(config /*TileGridConfig*/) {
+    let ts;
+    const gridSize = config.gridSize;
+    ts = config.tileSize ?
+          config.tileSize : // use given value
+          ts = round(min(width / gridSize, height / gridSize) * 0.9); // maximize grid
+      
+    // center grid    
+    const sideLength = gridSize * ts;
+    const gridX = (width - sideLength)/2;
+    const gridY = (height - sideLength)/2;
+    return new TileGrid(gridSize, gridX, gridY, ts);
+  }
+
   TileGrid.prototype.positionUnderMouse = function() {
     const mPos = this.mousePosForGrid();
   	const xTile = floor(mPos.x / this.tileSize);
@@ -30,7 +55,6 @@
   	const tile = this.get(posInGrid.x, posInGrid.y);
     return tile;
   };
-
   TileGrid.prototype.isMouseInside = function(margin) {
     const marg = (margin === undefined) ? 0 : margin*this.tileSize;
   	return mouseX >= this.x - marg &&
@@ -74,7 +98,22 @@
     const d = dist(c1x, c1y, c2x, c2y);
     return d <= steps*this.tileSize;
   }
+  TileGrid.prototype.isOnEdge = function(tile) {
+    return tile.xInGrid === 0 || tile.xInGrid === this.gridSize - 1 ||
+          tile.yInGrid === 0 || tile.yInGrid === this.gridSize - 1;
+  }
+
+  TileGrid.prototype.drawFrameSelf = function(col, weight) {
+    if (this.gridValues.length === 0) {return;}
+    stroke(col);
+    strokeWeight(weight); 
+    noFill();
+    rect(this.x, 
+        this.y, 
+        this.length, 
+        this.length);        
+  }
 
   // expose in window
-  context.TileGrid = TileGrid;
+  context.TileGrid = TileGrid;  
 })(window);

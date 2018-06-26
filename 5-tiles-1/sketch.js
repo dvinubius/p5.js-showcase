@@ -2,17 +2,19 @@
 
 function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
 
-var gridSize = 50;
 var tileGrid = void 0;
 var neighbourhoodRad = 4;
 var backgroundCol = [30, 0, 10];
 var basicStrokeCol = [200, 200, 200];
 var highlightStrokeCol = [10, 245, 160];
 var illuminatorCol = [10, 245, 160];
+var config = new TileGridConfig(50 // gridSize - # of tiles per side ?
+// no tileSize - maximum sized, still fitting the screen decently
+);
 
 function setup() {
 	createCanvas(windowWidth - 45, windowHeight);
-	tileGrid = createTileGrid();
+	createMyTileGrid();
 }
 
 function draw() {
@@ -44,15 +46,8 @@ function draw() {
 	}
 }
 
-function createTileGrid() {
-	var newGrid = void 0;
-	// maximize grid
-	var tileSize = round(min(width / gridSize, height / gridSize) * 0.9);
-	// center grid
-	var sideLength = gridSize * tileSize;
-	var gridX = (width - sideLength) / 2;
-	var gridY = (height - sideLength) / 2;
-	newGrid = new TileGrid(gridSize, gridX, gridY, tileSize);
+function createMyTileGrid() {
+	tileGrid = TileGrid.createInstance(config);
 	newGrid.applyEach(function (tile) {
 		return tile.direction = floor(random(0, 2));
 	});
@@ -62,8 +57,6 @@ function createTileGrid() {
 	newGrid.applyEach(function (tile) {
 		return tile.strokeCol = basicStrokeCol;
 	});
-
-	return newGrid;
 }
 
 function drawIlluminator() {
@@ -112,13 +105,13 @@ function flipDirection(tile) {
 
 function windowResized() {
 	resizeCanvas(windowWidth - 45, windowHeight);
-	tileGrid = createTileGrid();
+	createMyTileGrid();
 }
 
 function mouseWheel(event) {
-	var newSize = gridSize - event.delta / 100;
+	var newSize = tileGrid.gridSize - event.delta / 100;
 	if (newSize < 100 && newSize > 10) {
-		gridSize = newSize;
-		tileGrid = createTileGrid();
+		config.griddSize = newSize;
+		createMyTileGrid();
 	}
 }

@@ -15,6 +15,13 @@
     }
     return clone;
   }
+  Tile.prototype.isEvenCol = function() {
+    return this.xInGrid % 2 === 0;
+  }
+  Tile.prototype.isEvenRow = function() {
+    return this.yInGrid % 2 === 0;
+  }
+
   // expose in window
   context.Tile = Tile;
 })(window);
