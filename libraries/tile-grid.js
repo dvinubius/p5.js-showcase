@@ -1,7 +1,8 @@
 (function TileGridConfig(context) {
-  const TileGridConfig = function(gridSize, tileSize) {
+  const TileGridConfig = function(gridSize, tileSize, center) {
     this.gridSize = gridSize;
     this.tileSize = tileSize;
+    this.center = center;
   }
   context.TileGridConfig = TileGridConfig;
 })(window);

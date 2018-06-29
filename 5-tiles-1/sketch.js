@@ -8,9 +8,9 @@ var basicStrokeCol = [200, 200, 200];
 var highlightStrokeCol = [10, 245, 160];
 var illuminatorCol = [10, 245, 160];
 var tileGrid = void 0;
-var config = new TileGridConfig(50 // gridSize - # of tiles per side ?
-// no tileSize - maximum sized, still fitting the screen decently
-);
+var config = new TileGridConfig(30, // gridSize - # of tiles per side ?
+null, // no tileSize - maximum sized, still fitting the screen decently
+true);
 
 function setup() {
 	createCanvas(windowWidth - 45, windowHeight);

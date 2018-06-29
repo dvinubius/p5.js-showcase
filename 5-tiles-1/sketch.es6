@@ -5,8 +5,9 @@ const highlightStrokeCol = 	[10,245,160];
 const illuminatorCol = 			[10,245,160];
 let tileGrid;
 const config = new TileGridConfig(
-	50 // gridSize - # of tiles per side ?
-	   // no tileSize - maximum sized, still fitting the screen decently
+	30, // gridSize - # of tiles per side ?
+	null, // no tileSize - maximum sized, still fitting the screen decently
+	true   
 );
 
 function setup() {
