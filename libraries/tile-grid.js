@@ -36,11 +36,15 @@
     ts = config.tileSize ?
           config.tileSize : // use given value
           ts = round(min(width / gridSize, height / gridSize) * 0.9); // maximize grid
-      
-    // center grid    
-    const sideLength = gridSize * ts;
-    const gridX = (width - sideLength)/2;
-    const gridY = (height - sideLength)/2;
+    
+    let gridX = 0;
+    let gridY = 0;
+    // center grid
+    if (config.center) {
+      const sideLength = gridSize * ts;
+      gridX = (width - sideLength)/2;
+      gridY = (height - sideLength)/2;
+    }    
     return new TileGrid(gridSize, gridX, gridY, ts);
   }
 

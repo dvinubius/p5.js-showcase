@@ -6,7 +6,9 @@ var highlightStrokeCol = [210, 145, 0];
 var gridContourCol = [250, 150, 150];
 var tileGrid = void 0;
 var config = new TileGridConfig(17, // gridSize - # of tiles per side ?
-50);
+50, // tile size
+false // center grid in canvas?  
+);
 
 function setup() {
 	createCanvas(windowWidth - 45, windowHeight);

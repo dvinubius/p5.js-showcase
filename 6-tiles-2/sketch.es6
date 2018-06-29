@@ -5,7 +5,8 @@ const gridContourCol = [250,150,150];
 let tileGrid;
 const config = new TileGridConfig(
 	17, // gridSize - # of tiles per side ?
-	50  
+	50, // tile size
+	false // center grid in canvas?  
 );
 
 
