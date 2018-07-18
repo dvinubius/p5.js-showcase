@@ -14,20 +14,21 @@ var minCircleRad = 5;
 var maxScaleCursorDist = 3;
 var maxScaleTileDist = 3;
 
-var tileSize = 80;
-var noOfTiles = 11;
-var canvasSize = tileSize * noOfTiles;
-var halfDiag = Math.round(canvasSize / Math.sqrt(2));
+var tileSize = void 0;
+var noOfTiles = void 0;
+
+var canvasSize = void 0;
+var halfDiag = void 0;
 var tileGrid = void 0;
-var config = new TileGridConfig(noOfTiles + 1, // gridSize - # of tiles per side 
-tileSize // length of the side of one tile
-);
+
+var gridConfig = void 0;
 
 var distXToCenter = 0; // current distance of mouse pointer to canvas center
 var distYToCenter = 0; // current distance of mouse pointer to canvas center
 
 
 function setup() {
+	setupSize();
 	createCanvas(canvasSize, canvasSize);
 	createMyTileGrid();
 	colorMode(RGB, 255, 255, 255, 1);
@@ -40,7 +41,7 @@ function draw() {
 }
 
 function createMyTileGrid() {
-	tileGrid = TileGrid.createInstance(config);
+	tileGrid = TileGrid.createInstance(gridConfig);
 	tileGrid.applyEach(function (tile) {
 		return tile.strokeCol = basicStrokeCol;
 	});
@@ -88,6 +89,31 @@ function insideCanvas() {
 }
 
 function windowResized() {
+	setupSize();
 	resizeCanvas(canvasSize, canvasSize);
 	createMyTileGrid();
+}
+
+function setupSize() {
+	var _computeSizeSetup = computeSizeSetup(),
+	    size = _computeSizeSetup.size,
+	    numberOf = _computeSizeSetup.numberOf;
+
+	tileSize = size;
+	noOfTiles = numberOf;
+	canvasSize = tileSize * noOfTiles;
+	halfDiag = Math.round(canvasSize / Math.sqrt(2));
+	gridConfig = new TileGridConfig(noOfTiles + 1, // gridSize - # of tiles per side 
+	tileSize // length of the side of one tile
+	);
+}
+
+function computeSizeSetup() {
+	var minSide = Math.min(window.innerHeight, window.innerWidth);
+	var size = minSide > 600 ? 80 : 60;
+	var numberOf = Math.floor(minSide * 0.75 / size);
+	if (numberOf % 2 == 0) {
+		numberOf--;
+	}
+	return { size: size, numberOf: numberOf };
 }

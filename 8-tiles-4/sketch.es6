@@ -15,20 +15,20 @@ const scaleCircleRad = 2.5;
 const scaleCircleRadInside = 12;
 const perspectiveScaleFactor = 5;
 
-const tileSize = 80;
-const noOfTiles = 11;
-const canvasSize = tileSize * noOfTiles;
-const diagonal = canvasSize*Math.sqrt(2);
+let tileSize;
+let noOfTiles;
+
+let canvasSize;
+let diagonal;
 let tileGrid;
-const config = new TileGridConfig(
-	noOfTiles + 1, // gridSize - # of tiles per side 
-	tileSize  							 // length of the side of one tile
-);
+
+let gridConfig;
 
 let distXToOrigin = 0.01;
 let distYToOrigin = 0.01;
 
 function setup() {
+	setupSize();
 	createCanvas(canvasSize, canvasSize);
 	createMyTileGrid();
 	colorMode(RGB, 255, 255, 255, 1);
@@ -42,7 +42,7 @@ function draw() {
 }
 
 function createMyTileGrid() {
-	tileGrid = TileGrid.createInstance(config);
+	tileGrid = TileGrid.createInstance(gridConfig);
 	tileGrid.applyEach(tile => tile.strokeCol = basicStrokeCol);
 }
 
@@ -105,6 +105,30 @@ function insideCanvas() {
 }
 
 function windowResized() {
+	setupSize();
 	resizeCanvas(canvasSize, canvasSize);
 	createMyTileGrid();
+}
+
+
+function setupSize() {
+	const {size,numberOf} = computeSizeSetup();
+	tileSize = size;
+	noOfTiles = numberOf;
+	canvasSize = tileSize * noOfTiles;
+	diagonal = canvasSize*Math.sqrt(2);
+	gridConfig = new TileGridConfig(
+		noOfTiles + 1, 						// gridSize - # of tiles per side 
+		tileSize  							 // length of the side of one tile
+	);
+}
+
+function computeSizeSetup() {
+	const minSide = Math.min(window.innerHeight, window.innerWidth);
+	const size = minSide > 600 ? 80 : 60;
+	let numberOf = Math.floor(minSide * 0.75 / size);
+	if (numberOf % 2 == 0) {
+		numberOf--;
+	}
+	return {size: size, numberOf: numberOf};
 }
