@@ -14,7 +14,7 @@ let posY;
 let circleInitX;
 
 function setup() {
-	createCanvas(windowWidth-45, windowHeight);
+	createCanvas(windowWidth, windowHeight);
 	background(...bg);
 
 	strokeWeight(2);
@@ -70,5 +70,5 @@ function noiseVal() {
 }
 
 function windowResized() {
-	resizeCanvas(windowWidth-45, windowHeight);
+	resizeCanvas(windowWidth, windowHeight);
 }

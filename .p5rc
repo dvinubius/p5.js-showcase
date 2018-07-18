@@ -1,6 +1,7 @@
 {
   "name": "collection_1",
   "projects": [
+    "0-intro",
     "1-cube-webGL",
     "2-fade-paint",
     "3-noise-symmetry",

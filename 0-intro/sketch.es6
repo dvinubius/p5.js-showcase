@@ -7,7 +7,7 @@ let counterXStep = 1;
 
 
 function setup() {
-	createCanvas(windowWidth - 45, windowHeight);
+	createCanvas(windowWidth, windowHeight);
 	// background(245,245,245);
   background(0,0,0);
 	colorMode(RGB, 255, 255, 255, 1);
@@ -47,6 +47,8 @@ function noiseVal() {
 }
 
 function windowResized() {
-	resizeCanvas(windowWidth - 45, windowHeight);
+	resizeCanvas(windowWidth, windowHeight);
 	background(0,0,0);
+	counterX = width/2;
+	counterXMax = width;
 }

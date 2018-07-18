@@ -11,7 +11,7 @@ const config = new TileGridConfig(
 
 
 function setup() {
-	createCanvas(windowWidth-45, windowHeight);
+	createCanvas(windowWidth, windowHeight);
 	createMyTileGrid();
 }
 
@@ -69,6 +69,6 @@ function drawTile(tile) {
 }
 
 function windowResized() {
-	resizeCanvas(windowWidth-45, windowHeight);
+	resizeCanvas(windowWidth, windowHeight);
 	createMyTileGrid();
 }

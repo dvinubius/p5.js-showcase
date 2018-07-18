@@ -4,7 +4,7 @@ let myBGCol = [154, 210, 88];
 function setup() {
 	createCanvas(windowWidth, windowHeight, WEBGL);
 	setAttributes('antialias', true);
-	background(...myBGCol);
+  background(...myBGCol);
 }
 
 function draw() {

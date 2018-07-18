@@ -1,6 +1,6 @@
 const backgroundCol = [10,10,10];
 // const basicStrokeCol = [40,210,90];
-const basicStrokeCol = [210,110,130];
+const basicStrokeCol = [210,80,110];
 const circleStrokeCol = [75, 167, 0];
 // const fillCol = [210,90,30];
 const fillCol = [240,219,210];
@@ -8,7 +8,7 @@ const fillColInside = [10,10,10];
 
 const minStrokeWeightEdge = 0.33;
 const minStrokeWeightCircle = 0.33;
-const scaleStrokeWeight = 3;
+const scaleStrokeWeight = 4;
 const minCircleRad = 5;
 const minCircleRadInside = 0.5;
 const scaleCircleRad = 2.5;

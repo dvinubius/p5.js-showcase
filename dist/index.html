@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="UTF-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+
+	<title>Pick p5 project</title>
+
+	<style>
+    :root {
+      --sidebar-total: 235;
+      --sidebar-small: 45; 
+      --translate-sidebar: -160;
+      --star-rotation: 0;
+    }
+		body {
+      font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+      margin:0;
+			padding:0;
+			overflow: hidden;
+      background-color: beige;
+		}
+		canvas {
+			margin:auto;
+		}
+    .sidebar {
+      position: absolute;
+      width: calc(var(--sidebar-total) * 1px);
+      height: 100%;
+      min-height: 100px;
+      transform: translateX(calc(var(--translate-sidebar) * 1px));
+      background: linear-gradient(to right, #f5f5f5 0%, #f5f5f5 74%, transparent 78%);
+      box-sizing: content-box;
+      transition: transform 0.5s ease-in-out;
+      z-index: 1000;
+    }
+
+    .header {
+      position:absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 46px;
+      background-color: transparent;
+    }
+    .title {
+      margin-left: 10px;
+      margin-top: 15px;
+      width: 60%;
+      color: rgb(205,0,120);
+    }
+
+    .star {
+      position: absolute;
+      right: 4px;
+      top: 10px;
+      padding: 1px 6px 7px;
+      background-color: transparent;
+      border: none;
+      border-bottom: 1px solid rgba(205,0,120);
+      user-select: none;
+    }
+    .star-img {
+      width: 24px;
+      transition: transform 0.8s ease-in-out;
+      transform: rotateZ(0);
+    }
+    .rotated {
+      transform: rotateZ(240deg);
+    }
+    .star:focus {
+      outline:none;
+    }
+    .star:hover {
+      cursor: pointer;
+    }
+
+    #single-sketch {
+      height: 100vh;
+      border: none;
+      margin: 0;
+    }
+   
+
+    .list {
+      list-style: none;
+      position: absolute;
+      top: 50px;
+      left: 10px;
+      padding: 0;
+    }
+    .list li {
+      font-size: 16px;
+      padding: 5px 10px;
+      color: #818181;
+    }
+    .list li:hover {
+	    color: rgba(205,0,120,0.8);
+      cursor: pointer;
+    }
+	</style>
+</head>
+<body>
+  <div class="sidebar">
+    <div class="header">
+      <h2 class="title">Les bon-bons</h2>
+      <button class="star" onclick='toggleSidebar()'>
+        <img src="/assets/star.png" alt="Home" class="star-img">
+      </button>
+    </div>
+
+    <ul class="list">
+      <li onclick="navigateTo('0-intro')">Welcome</li>
+      <li onclick="navigateTo('1-cube-webGL')">Cube in WebGL</li>
+      <li onclick="navigateTo('2-fade-paint')">Fading Paint</li>
+      <li onclick="navigateTo('3-noise-symmetry')">Noise in Symmetry</li>
+      <li onclick="navigateTo('4-map-color')">Mapping to Color</li>
+      <li onclick="navigateTo('5-tiles-1')">Tile World <small>no. 1</small></li>
+      <li onclick="navigateTo('6-tiles-2')">Tile World <small>no. 2</small></li>        
+      <li onclick="navigateTo('7-tiles-3')">Tile World <small>no. 3</small></li>        
+      <li onclick="navigateTo('8-tiles-4')">Tile World <small>no. 4</small></li>        
+    </ul>
+  </div>
+  <iframe src="./0-intro/index.html" frameborder="0" width=100% scrolling="no" id="single-sketch">
+  </iframe>
+	<script src="./libraries/p5.js"></script>
+	<script src="./libraries/p5.dom.js"></script>
+	<script src="./libraries/p5.sound.js"></script>
+  <script src="./main.js"></script>
+</body>
+</html>

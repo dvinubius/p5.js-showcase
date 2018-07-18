@@ -8,7 +8,7 @@ let legendLum = 'luminosity: ';
 let legendSat = 'saturation (scroll) : ';
 
 function setup() {
-	createCanvas(windowWidth-45, windowHeight);
+	createCanvas(windowWidth, windowHeight);
 	background(bg.h, bg.s, bg.l);
 	textSize(14);
 	colorMode(HSB, 360, 100, 100, 1);
@@ -19,9 +19,10 @@ function draw() {
 	bg.l = map(mouseY, 0, height, 100, 0);
 	background(bg.h, bg.s, bg.l);
 	fill(0, 0, 100 - bg.l);
-	text(legendHue + Math.round(bg.h), 20, 30);
-	text(legendLum + Math.round(bg.l), 20, 50);
-	text(legendSat + Math.round(bg.s), 20, 70);
+	textSize(20);
+	text(legendHue + Math.round(bg.h), width/2 - 260, height/2 - 40);
+	text(legendLum + Math.round(bg.l), width/2 - 260, height/2);
+	text(legendSat + Math.round(bg.s), width/2 - 260, height/2 + 40);
 }
 
 function mouseWheel(event) {
@@ -31,5 +32,5 @@ function mouseWheel(event) {
 }
 
 function windowResized() {
-	resizeCanvas(windowWidth-45, windowHeight);
+	resizeCanvas(windowWidth, windowHeight);
 }
