@@ -12,7 +12,6 @@ var legendSat = 'saturation (scroll) : ';
 function setup() {
 	createCanvas(windowWidth, windowHeight);
 	background(bg.h, bg.s, bg.l);
-	textSize(14);
 	colorMode(HSB, 360, 100, 100, 1);
 }
 
