@@ -6,15 +6,17 @@ var simulation = void 0,
     bubbles = [],
     creationInterval = void 0;
 
+var idCounter = 0;
+
 var nodeRadiusMin = 20;
-var nodeRadiusAdded = 50;
+var nodeRadiusAdded = 30;
 var initialOpacity = 0.01;
 var fadeInStep = 0.0035;
 var creationIntervalDuration = 3000;
-var maxNumberNodes = 40;
+var maxNumberNodes = 20;
 
 var bgColor = [120, 150, 230];
-var bubbleColorFill = [20, 100, 220];
+var bubbleColorFill = [255, 225, 180];
 var bubbleColorStroke = [155, 175, 185];
 var nodeColorFill = [255, 225, 180];
 var nodeColorStroke = [255, 155, 155];
@@ -23,6 +25,7 @@ var linkColor = [250, 250, 250, .8];
 var addGraphDist = 50;
 var myFactor = 40;
 var distanceExp = 2.4;
+var frictionDiffUnit = 0.1;
 
 function setup() {
 	createCanvas(windowWidth, windowHeight);
@@ -50,17 +53,15 @@ function updateBubble(b, index) {
 	b.opacity = min(1, b.opacity + fadeInStep);
 	b.radius = min(b.maxRadius, b.radius + .2);
 
-	var out = isOutOfCanvas(b);
 	var addedToGraph = tryAddToGraph(b);
 
-	if (out || addedToGraph) {
+	if (addedToGraph) {
 		bubbles.splice(index, 1); // forEach is safe for deletion
 		return;
 	}
 
 	fill(bubbleColorFill.concat([b.opacity]));
-	stroke(bubbleColorStroke.concat([b.opacity]));
-	strokeWeight(2);
+	noStroke();
 
 	ellipse(b.x, b.y, b.radius, b.radius);
 }
@@ -122,7 +123,9 @@ function tryAddToGraph(bubble) {
 			source: bubble,
 			target: closestNode
 		});
+		bubble.id = ++idCounter;
 
+		bubbles.splice(bubbles.indexOf(bubble), 1);
 		updateSimulation();
 		return true;
 	} else {
@@ -135,64 +138,47 @@ function tryAddToGraph(bubble) {
 	return false;
 }
 
-function isOutOfCanvas(bubble) {
-	return bubble.x > width + bubble.radius || bubble.x < -bubble.radius || bubble.y < -bubble.radius || bubble.y > height + bubble.radius;
-}
-
 // ------- GRAPH & SIMULATION ---------- //
 
 function initGraph() {
-	nodes.push({ x: width / 2, y: height / 2, radius: nodeRadiusMin * 3, opacity: 1 });
+	nodes.push({ x: width / 2, y: height / 2, radius: nodeRadiusMin * 3, opacity: 1, id: 0 });
 }
 
 function initSimulation() {
-	simulation = d3.forceSimulation().force("link", d3.forceLink()).force("charge", d3.forceManyBody()).force("collision", d3.forceCollide().radius(function (node) {
+	simulation = d3.forceSimulation().force("link", d3.forceLink()).force("charge", d3.forceManyBody().strength(120)).force("collision", d3.forceCollide().radius(function (node) {
 		return node.radius + 5;
 	})).force("center", d3.forceCenter(width / 2, height / 2));
 
 	simulation.nodes(nodes).on("tick", function () {
-		return updateOpacities();
+		return onTick();
 	});
 
 	simulation.force("link").links(links);
-
-	d3.select(canvas).call(d3.drag().container(canvas).subject(dragsubject).on("start", dragstarted).on("drag", dragged).on("end", dragended));
 }
 
 function updateSimulation() {
 	simulation.nodes(nodes).on("tick", function () {
-		return updateOpacities();
+		return onTick();
 	});
 	simulation.force("link").links(links);
 	simulation.alphaTarget(0.4).restart();
 }
 
-function dragsubject() {
-	return simulation.find(d3.event.x, d3.event.y);
+function onTick() {
+	updateOpacities();
+	var fu = frictionDiffUnit;
+	nodes.forEach(function (node) {
+		node.dx = node.dx > 0 ? node.dx - fu : node.dx + fu;
+		node.dy = node.dy > 0 ? node.dy - fu : node.dy + fu;
+	});
 }
-
-function dragstarted() {
-	if (!d3.event.active) simulation.alphaTarget(0.3).restart();
-	d3.event.subject.fx = d3.event.subject.x;
-	d3.event.subject.fy = d3.event.subject.y;
-}
-
-function dragged() {
-	d3.event.subject.fx = d3.event.x;
-	d3.event.subject.fy = d3.event.y;
-}
-
-function dragended() {
-	if (!d3.event.active) simulation.alphaTarget(0);
-	d3.event.subject.fx = null;
-	d3.event.subject.fy = null;
-}
-
 function updateOpacities() {
 	nodes.forEach(function (node) {
 		return node.opacity = min(1, node.opacity + fadeInStep * 4);
 	});
 }
+
+// ------- AUX -------- //
 
 function findProperPosForBubble() {
 	var x = void 0,
@@ -206,6 +192,10 @@ function findProperPosForBubble() {
 		}
 	}
 	return { x: x, y: y };
+}
+
+function isOutOfCanvas(bubble) {
+	return bubble.x > width + bubble.radius || bubble.x < -bubble.radius || bubble.y < -bubble.radius || bubble.y > height + bubble.radius;
 }
 
 function attractionForce(b_from, b_on, distance) {
