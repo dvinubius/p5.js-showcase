@@ -7,7 +7,6 @@
     this.dx = dx ? dx : 0;
     this.dy = dy ? dy : 0;
     this.opacity = opacity ? opacity : 1;
-    console.log(this.opacity);
   }
 
   // only primitive values - simple to clone;

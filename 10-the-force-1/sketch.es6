@@ -1,32 +1,45 @@
-let simulation,
-		nodes	= [],
-		links = [],
-		bubbles = [],
-		creationInterval;
+let		simulation;				// graph force simulation
 
-let idCounter = 0;
 
-const nodeRadiusMin = 20;
-const nodeRadiusAdded = 30;
-const initialOpacity = 0.01;
-const fadeInStep = 0.0035;
-const creationIntervalDuration = 3000;
-const maxNumberNodes = 20;
+const bubbles = [], 		// created bubbles
+			nodes	= [], 			// actual nodes of the graph
+			links = [],
+			bubblesApproaching = [], // bubbles producing shockOverlayPrep
+			bubblesToAdd = []; // candidates to be added to the graph 
+
+let 	creationInterval;
+const creationIntervalDuration = 2000;
+
+const nodeRadiusMin = 20,
+			nodeRadiusAdded = 30,
+			initialOpacity = 0.01,
+			fadeInStep = 0.0035,
+			maxNumberNodes = 20;
 
 const bgColor = [120,150,230];
-let bubbleColorFill = [255,225,180];
-let bubbleColorStroke = [155,175,185];
-let nodeColorFill = [255,225,180];
-let nodeColorStroke = [255,155,155];
-let linkColor = [250,250,250,.8];
+let bubbleColorFill = [255,225,180],
+		bubbleColorStroke = [155,175,185],
+		nodeColorFill = [255,225,180],
+		nodeColorStroke = [255,155,155],
+		linkColor = [250,250,250,.8];
 
-let addGraphDist = 50;
-let myFactor = 40;
-let distanceExp = 2.4;
-let frictionDiffUnit = 0.1;
+let addGraphDist = 50,
+		overlayPrepDist = 70,
+		myFactor = 40,
+		distanceExp = 2.4,
+		velocityDecay = 0.4;
+
+
+const useShockOverlay = true;
+let shockOverlayAlpha = 0;
+const shockOverlayColor = [250,250,250],
+			shockOverlayAlphaMax = 1,
+			shockOverlayAlphaDecayInc = 0.08,
+			shockOverlayAlphaDecayDec = 0.01;
 
 function setup() {
-	createCanvas(windowWidth, windowHeight);
+	const side = min(windowWidth, windowHeight) * 0.8;
+	createCanvas(side, side);
 	initGraph();
 	initSimulation();
 	initBubbles();
@@ -37,25 +50,22 @@ function draw() {
 	translate(0.5,0.5);
 	background(bgColor);
 
-	bubbles.forEach((b, index) => updateBubble(b, index));
+	updateBubbles();
+
+	bubbles.forEach(drawBubble);
 
 	links.forEach(drawLink);
 
 	nodes.forEach(drawNode);
-}
 
-function updateBubble(b, index) {
-	b.move();
-	b.opacity = min(1, b.opacity + fadeInStep);
-	b.radius = min(b.maxRadius, b.radius + .2);
-
-	const addedToGraph = tryAddToGraph(b);
-
-	if (addedToGraph) {
-		bubbles.splice(index, 1); // forEach is safe for deletion
-		return;
+	if (useShockOverlay) {
+		drawShockOverlay();
 	}
 
+	addCandidates();	
+}
+
+function drawBubble(b) {
 	fill(bubbleColorFill.concat([b.opacity]));
 	noStroke();
 	
@@ -80,23 +90,37 @@ function drawNode(d) {
   ellipse(d.x, d.y, d.radius, d.radius);
 }
 
+function drawShockOverlay() {
+	const shouldIncreaseAlpha = bubblesApproaching.length > 0 && shockOverlayAlpha < shockOverlayAlphaMax;
+	const shouldDecreaseAlpha = bubblesApproaching.length === 0 && shockOverlayAlpha > 0;
+	if (shouldIncreaseAlpha) {
+		shockOverlayAlpha += shockOverlayAlphaDecayInc;
+	}
+	if (shouldDecreaseAlpha) {
+		shockOverlayAlpha -= shockOverlayAlphaDecayDec;
+	}
+
+	background(shockOverlayColor.concat([shockOverlayAlpha]));
+}
+
 function windowResized() {
-	resizeCanvas(windowWidth, windowHeight);
+	const side = min(windowWidth, windowHeight) * 0.7;
+	resizeCanvas(side, side);
 	simulation.force("center", d3.forceCenter(width/2, height/2));
 }
 
-// ----- BUBBLES -------- //
+// ----- BUBBLES and Adding to Graph -------- //
 
 function initBubbles() {
 	creationInterval = setInterval(() => {
-		addBubble();
+		createBubble();
 		if (nodes.length > maxNumberNodes) {
 			clearInterval(creationInterval);
 		}
 	}, creationIntervalDuration);
 }
 
-function addBubble() {
+function createBubble() {
 	const {x,y} = findProperPosForBubble();
 	const maxRadius = nodeRadiusMin + round(random(nodeRadiusAdded));
 	const initialRadius = 1;
@@ -107,28 +131,80 @@ function addBubble() {
 	bubbles.push(bubble);
 }
 
+function updateBubbles() {
+	bubbles.forEach((b, index) => {
+		b.move();
+		b.opacity = min(1, b.opacity + fadeInStep);
+		b.radius = min(b.maxRadius, b.radius + .2);
+
+		if (isWayOutOfCanvas(b)) {
+			bubbles.splice(index, 1); // forEach is safe for deletion
+			return;
+		}
+
+		tryAddToGraph(b); // if adding is possible, remove from bubbles:[] and push to bubblesToAdd:[]
+	});
+}
+
 function tryAddToGraph(bubble) {
 	const closestNode = simulation.find(bubble.x, bubble.y);
 	const d = dist(bubble.x, bubble.y, closestNode.x, closestNode.y);
-	if (d <= addGraphDist) {
-		nodes.push(bubble);
-		links.push({
-			source: bubble,
-			target: closestNode
-		});
-		bubble.id = ++idCounter;
-
-		bubbles.splice(bubbles.indexOf(bubble),1);
-		updateSimulation();
-		return true;
-	} else {
-		const isBubbleToLeft = bubble.x < closestNode.x;
-		const isBubbleAbove = bubble.y < closestNode.y;
-		const forceVal = attractionForce(closestNode, bubble, d);
-		bubble.dx += isBubbleToLeft ? forceVal : -forceVal;
-		bubble.dy += isBubbleAbove ? forceVal : -forceVal;
+	if (useShockOverlay) {
+		checkApproachingForOverlay();
 	}
-	return false;
+	if (d <= addGraphDist) {
+		makeGraphCandidate(bubble, closestNode);
+	} else {
+		pullTowardsNode(bubble, closestNode, d);
+	}
+}
+
+function checkApproachingForOverlay(bubble, distanceToANode) {
+	const registeredAsApproaching = bubblesApproaching.indexOf(bubble) !== -1;
+	if (distanceToANode <= overlayPrepDist && 
+			!registeredAsApproaching) {
+		bubblesApproaching.push(bubble);
+	}
+}
+
+function addCandidates() {
+	let addedAny = false;
+	bubblesToAdd.forEach(({bubble: bub, mateInGraph: mate}) => {
+		addedAny = true;
+		nodes.push(bub);
+		links.push({
+			source: bub,
+			target: mate
+		});
+	});
+
+	if (addedAny) {
+		shockOverlayAlpha = shockOverlayAlphaMax;
+		updateSimulation();
+	}
+
+	bubblesToAdd.splice(0);
+}
+
+function makeGraphCandidate(bubble, closestNode) {
+	bubblesToAdd.push({
+		bubble: bubble, 
+		mateInGraph: closestNode
+	});
+
+	bubbles.splice(bubbles.indexOf(bubble),1);
+	
+	if (useShockOverlay) {
+		bubblesApproaching.splice(bubblesApproaching.indexOf(bubble), 1);
+	}
+}
+
+function pullTowardsNode(bubble, closestNode, distance) {
+	const isBubbleToLeft = bubble.x < closestNode.x;
+	const isBubbleAbove = bubble.y < closestNode.y;
+	const forceVal = attractionForce(closestNode, bubble, distance);
+	bubble.dx += isBubbleToLeft ? forceVal : -forceVal;
+	bubble.dy += isBubbleAbove ? forceVal : -forceVal;
 }
 
 // ------- GRAPH & SIMULATION ---------- //
@@ -139,10 +215,11 @@ function initGraph() {
 
 function initSimulation() {
 	simulation = d3.forceSimulation()
-		.force("link", d3.forceLink())
+		.velocityDecay(velocityDecay)
+		.force("link", d3.forceLink().distance(20).strength(0.7))
 		.force("charge", d3.forceManyBody().strength(120))
 		.force("collision", d3.forceCollide()
-														.radius(node => node.radius+5))
+														.radius(node => node.radius + 10))
 		.force("center", d3.forceCenter(width / 2, height / 2));
 
 	simulation
@@ -156,16 +233,11 @@ function initSimulation() {
 function updateSimulation() {
 	simulation.nodes(nodes).on("tick", () => onTick());
 	simulation.force("link").links(links);
-	simulation.alphaTarget(0.4).restart();
+	simulation.alphaTarget(0.2).restart();
 }
 
 function onTick() {
 	updateOpacities();
-	const fu = frictionDiffUnit
-	nodes.forEach(node => {
-		node.dx = (node.dx > 0) ? node.dx - fu : node.dx + fu;
-		node.dy = (node.dy > 0) ? node.dy - fu : node.dy + fu;
-	});
 }
 function updateOpacities() {
 	nodes.forEach(node => node.opacity = min(1, node.opacity + fadeInStep*4));
@@ -186,13 +258,22 @@ function findProperPosForBubble() {
 	return {x: x, y: y};
 }
 
-function isOutOfCanvas(bubble) {
-	return bubble.x > width + bubble.radius || 
-				 bubble.x < -bubble.radius 				|| 
-				 bubble.y < -bubble.radius 				|| 
-				 bubble.y > height + bubble.radius;
+function isWayOutOfCanvas(bubble) {
+	const margin = bubble.radius + width/4;
+	return bubble.x > width + margin 	|| 
+				 bubble.x < -margin					|| 
+				 bubble.y < -margin 				|| 
+				 bubble.y > height + margin;
 }
 
 function attractionForce(b_from, b_on, distance) {
 	return (b_on.radius*b_from.radius)/(distance**distanceExp)*myFactor;
+}
+
+function mouseClicked() {
+	// console.log('bubbles: ', bubbles);
+	// console.log('candidates: ', bubblesToAdd);
+	// console.log('nodes: ', nodes);
+	// console.log('approaching: ', bubblesApproaching); 
+	// simulation.alphaTarget(0.01).restart();
 }
