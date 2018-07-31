@@ -1,7 +1,18 @@
 "use strict";
 
-var simulation = void 0; // graph force simulation
-
+var simulation = void 0,
+    // graph force simulation
+nodeCounter = 0;
+var simUpdateAlphaTarget = 0.5,
+    forceStrengthManyBody = .8,
+    forceStrengthLink = 0.3,
+    distanceLink = 30,
+    velocityDecay = 0.6,
+    addGraphDist = 50,
+    overlayPrepDist = 70,
+    myFactor = 30,
+    // control value of attraction force of bubbles into graph
+distanceExp = 2.4; // exponent of attractionForce variation (2 = quadratic - as in coulomb force - , 3 = cubic etc.)
 
 var bubbles = [],
     // created bubbles
@@ -10,31 +21,34 @@ nodes = [],
 links = [],
     bubblesApproaching = [],
     // bubbles producing shockOverlayPrep
-bubblesToAdd = []; // candidates to be added to the graph 
+bubblesToAdd = []; // candidates to be added to the graph
+
+var tracingCandidates = [];
+var tracingBubbleGroups = [],
+    initialTraceOpacity = .5,
+    fadeOutTracingStep = 0.02,
+    traceColor = [200, 200, 200];
+var addTracesIterations = 2;
+var addTracesIterCounter = addTracesIterations;
 
 var creationInterval = void 0;
-var creationIntervalDuration = 2000;
+var creationIntervalDuration = 500;
 
 var nodeRadiusMin = 20,
     nodeRadiusAdded = 30,
     initialOpacity = 0.01,
     fadeInStep = 0.0035,
-    maxNumberNodes = 20;
+    maxNumberNodes = 30;
 
-var bgColor = [120, 150, 230];
+// const bgColor = [120,150,230];
+var bgColor = [50, 80, 110];
 var bubbleColorFill = [255, 225, 180],
     bubbleColorStroke = [155, 175, 185],
     nodeColorFill = [255, 225, 180],
     nodeColorStroke = [255, 155, 155],
     linkColor = [250, 250, 250, .8];
 
-var addGraphDist = 50,
-    overlayPrepDist = 70,
-    myFactor = 40,
-    distanceExp = 2.4,
-    velocityDecay = 0.4;
-
-var useShockOverlay = true;
+var useShockOverlay = false;
 var shockOverlayAlpha = 0;
 var shockOverlayColor = [250, 250, 250],
     shockOverlayAlphaMax = 1,
@@ -55,6 +69,9 @@ function draw() {
 	background(bgColor);
 
 	updateBubbles();
+	updateTracingBubbles();
+
+	drawTracingBubbles();
 
 	bubbles.forEach(drawBubble);
 
@@ -70,10 +87,31 @@ function draw() {
 }
 
 function drawBubble(b) {
-	fill(bubbleColorFill.concat([b.opacity]));
-	noStroke();
+	if (b.colorFill) {
+		fill(b.colorFill.concat([b.opacity]));
+	} else {
+		noFill();
+	}
+	if (b.colorStroke) {
+		stroke(b.colorStroke);
+	} else {
+		noStroke();
+	}
 
 	ellipse(b.x, b.y, b.radius, b.radius);
+}
+
+function drawTracingBubbles() {
+	tracingBubbleGroups.forEach(function (group) {
+		return group.forEach(function (pair) {
+			var b_from = pair.traced;
+			var b_to = pair.original;
+			// drawBubble(b_from);
+			strokeWeight(b_from.radius * 0.9);
+			stroke(nodeColorStroke.concat(b_from.opacity));
+			line(b_from.x, b_from.y, b_to.x, b_to.y);
+		});
+	});
 }
 
 function drawLink(d) {
@@ -88,10 +126,9 @@ function drawNode(d) {
 	fill(bgColor);
 	ellipse(d.x, d.y, d.radius, d.radius);
 
-	fill(nodeColorFill.concat([d.opacity]));
-	stroke(nodeColorStroke.concat([d.opacity]));
+	d.colorStroke = nodeColorStroke.concat([d.opacity]);
 	strokeWeight(1);
-	ellipse(d.x, d.y, d.radius, d.radius);
+	drawBubble(d);
 }
 
 function drawShockOverlay() {
@@ -130,11 +167,12 @@ function createBubble() {
 	    y = _findProperPosForBubb.y;
 
 	var maxRadius = nodeRadiusMin + round(random(nodeRadiusAdded));
+	// const maxRadius = nodeRadiusMin + nodeRadiusAdded*0.5;
 	var initialRadius = 1;
-	var dx = x > width / 2 ? map(random(), 0, 1, -3, 0) : map(random(), 0, 1, 0, 3);
-	var dy = y > height / 2 ? map(random(), 0, 1, -3, 0) : map(random(), 0, 1, 0, 3);
+	var dx = x > width / 2 ? map(random(), 0, 1, -2, 0) : map(random(), 0, 1, 0, 2);
+	var dy = y > height / 2 ? map(random(), 0, 1, -2, 0) : map(random(), 0, 1, 0, 2);
 	var opacity = initialOpacity;
-	var bubble = new Bubble(x, y, initialRadius, dx, dy, opacity, maxRadius);
+	var bubble = new Bubble(x, y, initialRadius, dx, dy, opacity, maxRadius, bubbleColorFill);
 	bubbles.push(bubble);
 }
 
@@ -150,6 +188,22 @@ function updateBubbles() {
 		}
 
 		tryAddToGraph(b); // if adding is possible, remove from bubbles:[] and push to bubblesToAdd:[]
+	});
+}
+
+function updateTracingBubbles() {
+
+	tracingBubbleGroups.forEach(function (group, index) {
+		// fade out all nodes in group
+		group.forEach(function (pair) {
+			var b = pair.traced;
+			b.opacity = max(0, b.opacity - fadeOutTracingStep);
+		});
+		// fade out done? (first node is sufficient checking)
+		if (group[0].traced.opacity === 0) {
+			// eliminate group
+			tracingBubbleGroups.splice(index, 1);
+		}
 	});
 }
 
@@ -180,7 +234,10 @@ function addCandidates() {
 		    mate = _ref.mateInGraph;
 
 		addedAny = true;
+		bub.id = nodeCounter;
+		bub.colorStroke = nodeColorStroke;
 		nodes.push(bub);
+		nodeCounter++;
 		links.push({
 			source: bub,
 			target: mate
@@ -190,9 +247,11 @@ function addCandidates() {
 	if (addedAny) {
 		shockOverlayAlpha = shockOverlayAlphaMax;
 		updateSimulation();
-	}
 
-	bubblesToAdd.splice(0);
+		bubblesToAdd.splice(0);
+
+		createTracingCandidates();
+	}
 }
 
 function makeGraphCandidate(bubble, closestNode) {
@@ -216,14 +275,30 @@ function pullTowardsNode(bubble, closestNode, distance) {
 	bubble.dy += isBubbleAbove ? forceVal : -forceVal;
 }
 
+function createTracingCandidates() {
+	var candidates = nodes.map(function (node) {
+		var newNode = node.clone();
+		// newNode.opacity = initialTraceOpacity;
+		var pair = {
+			traced: newNode,
+			original: node
+		};
+		return pair;
+	});
+	tracingCandidates = candidates;
+}
+
 // ------- GRAPH & SIMULATION ---------- //
 
 function initGraph() {
-	nodes.push({ x: width / 2, y: height / 2, radius: nodeRadiusMin * 3, opacity: 1, id: 0 });
+	var rootNode = new Bubble(width / 2, height / 2, nodeRadiusMin * 2, 0, 0, 1, nodeRadiusMin * 2, nodeColorFill);
+	rootNode.id = 0;
+	rootNode.colorStroke = nodeColorStroke;
+	nodes.push(rootNode);
 }
 
 function initSimulation() {
-	simulation = d3.forceSimulation().velocityDecay(velocityDecay).force("link", d3.forceLink().distance(20).strength(0.7)).force("charge", d3.forceManyBody().strength(120)).force("collision", d3.forceCollide().radius(function (node) {
+	simulation = d3.forceSimulation().velocityDecay(velocityDecay).force("link", d3.forceLink().distance(distanceLink).strength(forceStrengthLink)).force("charge", d3.forceManyBody().strength(forceStrengthManyBody)).force("collision", d3.forceCollide().radius(function (node) {
 		return node.radius + 10;
 	})).force("center", d3.forceCenter(width / 2, height / 2));
 
@@ -239,16 +314,44 @@ function updateSimulation() {
 		return onTick();
 	});
 	simulation.force("link").links(links);
-	simulation.alphaTarget(0.2).restart();
+	simulation.alphaTarget(simUpdateAlphaTarget).restart();
+	nodes.forEach(function (node) {
+		return node.opacity = 0.8;
+	});
+	addTracesIterCounter = 0;
 }
 
 function onTick() {
-	updateOpacities();
+	updateOpacities(); // for nodes actually in the graph
+	createTraces(); // follow graph movements with traces
 }
 function updateOpacities() {
 	nodes.forEach(function (node) {
 		return node.opacity = min(1, node.opacity + fadeInStep * 4);
 	});
+}
+function createTraces() {
+	// create actual traces from candidates. 
+	// there should be tracingCandidates available if the iterationCounter is below the max
+	// when it's 0, the tracingCandidates were created in addCandidates
+	// when it's >=1, the tracingCandidates were created here, in createTraces
+	if (addTracesIterCounter < addTracesIterations) {
+		var newGroup = [];
+		tracingCandidates.forEach(function (pair) {
+			newGroup.push(pair);
+		});
+
+		newGroup.forEach(function (pair) {
+			pair.traced.opacity = initialTraceOpacity;
+			pair.traced.colorFill = traceColor;
+		});
+
+		tracingBubbleGroups.push(newGroup);
+
+		// prepare another set of tracingCandidates
+		createTracingCandidates();
+		addTracesIterCounter++;
+	}
 }
 
 // ------- AUX -------- //
@@ -277,9 +380,5 @@ function attractionForce(b_from, b_on, distance) {
 }
 
 function mouseClicked() {
-	// console.log('bubbles: ', bubbles);
-	// console.log('candidates: ', bubblesToAdd);
-	// console.log('nodes: ', nodes);
-	// console.log('approaching: ', bubblesApproaching); 
-	// simulation.alphaTarget(0.01).restart();
+	simulation.alphaTarget(0.85).restart();
 }
