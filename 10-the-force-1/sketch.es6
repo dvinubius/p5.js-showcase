@@ -53,7 +53,7 @@ const shockOverlayColor = [250,250,250],
 			shockOverlayAlphaDecayDec = 0.01;
 
 function setup() {
-	const side = min(windowWidth, windowHeight) * 0.8;
+	const side = min(windowWidth, windowHeight) * 0.95;
 	createCanvas(side, side);
 	initGraph();
 	initSimulation();
