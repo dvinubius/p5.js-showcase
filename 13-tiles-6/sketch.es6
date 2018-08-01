@@ -84,6 +84,7 @@ function drawTile(tile) {
 function windowResized() {
 	resizeCanvas(windowWidth, windowHeight);
 	createMyTileGrid();
+	loop();
 }
 
 function mouseWheel(event) {

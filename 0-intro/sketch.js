@@ -50,4 +50,5 @@ function windowResized() {
 	background(0, 0, 0);
 	counterX = width / 2;
 	counterXMax = width;
+	xoff = 0;
 }
