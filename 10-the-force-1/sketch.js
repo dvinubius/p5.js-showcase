@@ -1,90 +1,128 @@
 "use strict";
 
-var simulation = void 0,
-    // graph force simulation
-nodeCounter = 0;
-var simUpdateAlphaTarget = 0.5,
+// ------- FADE IN ALL
+
+var fadeInAllStartOpacity = 1,
+    fadeInAllStep = 0.02,
+    fadeInAllColor = [255, 250, 250];
+var fadeInAllOpacity = fadeInAllStartOpacity;
+
+// -------- FORCE SIMULATION
+
+var simulation = void 0;
+
+var simUpdateAlphaTarget = 0.6,
     forceStrengthManyBody = .8,
-    forceStrengthLink = 0.3,
+    forceStrengthLink = 0.5,
     distanceLink = 30,
-    velocityDecay = 0.6,
+    velocityDecay = 0.4,
+    velocityDecayDiff = 0.03,
     addGraphDist = 50,
     overlayPrepDist = 70,
     myFactor = 30,
     // control value of attraction force of bubbles into graph
-distanceExp = 2.4; // exponent of attractionForce variation (2 = quadratic - as in coulomb force - , 3 = cubic etc.)
+distanceExp = 2.4,
+    // exponent of attractionForce variation (2 = quadratic - as in coulomb force - , 3 = cubic etc.)
 
-var bubbles = [],
-    // created bubbles
 nodes = [],
     // actual nodes of the graph
-links = [],
-    bubblesApproaching = [],
-    // bubbles producing shockOverlayPrep
-bubblesToAdd = []; // candidates to be added to the graph
+links = [];
 
-var tracingCandidates = [];
-var tracingBubbleGroups = [],
+var heated = 0;
+var heatCounterDOM = void 0;
+var maxHeat = 5;
+
+var currentStrengthManyBody = void 0,
+    currentStrengthLink = void 0,
+    currentDistanceLink = void 0,
+    currentVelocityDecay = void 0,
+    currentUpdateAlphaTarget = void 0,
+    nextShaken = void 0;
+
+// ------- BUBBLES APPROACHING GRAPH
+
+var creationInterval = void 0,
+    nodeCounter = 0; // have id's for all nodes
+var creationIntervalDuration = 1500,
+    bubbles = [],
+    // created bubbles			
+bubblesToAdd = [],
+    // candidates to be added to the graph
+bubbleRainSetSize = 30,
+    maxNumberNodesAutoGen = 10,
+    // create bubbles as long as graph has < max nodes
+bubbleRadiusMin = 20,
+    bubbleRadiusMore = 30,
+    initialOpacity = 0.01,
+    fadeInStep = 0.0035;
+
+// ------ TRACING FX - when a bubble joins the graph
+
+var tracingPairs = [];
+var traceGroups = [],
     initialTraceOpacity = .5,
     fadeOutTracingStep = 0.02,
     traceColor = [200, 200, 200];
 var addTracesIterations = 2;
 var addTracesIterCounter = addTracesIterations;
 
-var creationInterval = void 0;
-var creationIntervalDuration = 500;
+// ----- STYLE
 
-var nodeRadiusMin = 20,
-    nodeRadiusAdded = 30,
-    initialOpacity = 0.01,
-    fadeInStep = 0.0035,
-    maxNumberNodes = 30;
-
-// const bgColor = [120,150,230];
 var bgColor = [50, 80, 110];
-var bubbleColorFill = [255, 225, 180],
-    bubbleColorStroke = [155, 175, 185],
-    nodeColorFill = [255, 225, 180],
+var bubbleColorFill = [255, 205, 150],
+
+// bubbleColorFill = [255,225,180],
+bubbleColorStroke = [155, 175, 185],
+    nodeColorFill = bubbleColorFill,
     nodeColorStroke = [255, 155, 155],
     linkColor = [250, 250, 250, .8];
 
-var useShockOverlay = false;
-var shockOverlayAlpha = 0;
-var shockOverlayColor = [250, 250, 250],
-    shockOverlayAlphaMax = 1,
-    shockOverlayAlphaDecayInc = 0.08,
-    shockOverlayAlphaDecayDec = 0.01;
+// ------ p5.js SETUP
 
 function setup() {
-	var side = min(windowWidth, windowHeight) * 0.95;
+	var side = min(windowWidth, windowHeight);
 	createCanvas(side, side);
 	initGraph();
 	initSimulation();
 	initBubbles();
 	colorMode(RGB, 255, 255, 255, 1);
+	heatCounterDOM = select('#heat-counter');
+	console.log(heatCounterDOM.elt);
+	heatCounterDOM.elt.textContent = heated;
 }
+
+// ------- p5.js LOOP
 
 function draw() {
-	translate(0.5, 0.5);
 	background(bgColor);
 
-	updateBubbles();
-	updateTracingBubbles();
+	// prep DRAWING
+	updateBubbles(); // update positions of free bubbles and mark candidates for graph integration
+	updateTraces(); // traces are faded out
 
-	drawTracingBubbles();
-
+	// DRAWING
+	drawTraces();
 	bubbles.forEach(drawBubble);
-
 	links.forEach(drawLink);
-
 	nodes.forEach(drawNode);
 
-	if (useShockOverlay) {
-		drawShockOverlay();
-	}
-
+	// update graph - add bubbles that are close enough
 	addCandidates();
+
+	// FADING IN?
+	if (fadeInAllOpacity > 0) {
+		background(fadeInAllColor.concat([fadeInAllOpacity]));
+		fadeInAllOpacity = max(0, fadeInAllOpacity - fadeInAllStep);
+	}
 }
+
+function windowResized() {
+	var side = min(windowWidth, windowHeight);
+	resizeCanvas(side, side);
+	simulation.force("center", d3.forceCenter(width / 2, height / 2));
+}
+
+// ----- BUBBLES and Adding to Graph -------- //
 
 function drawBubble(b) {
 	if (b.colorFill) {
@@ -101,61 +139,10 @@ function drawBubble(b) {
 	ellipse(b.x, b.y, b.radius, b.radius);
 }
 
-function drawTracingBubbles() {
-	tracingBubbleGroups.forEach(function (group) {
-		return group.forEach(function (pair) {
-			var b_from = pair.traced;
-			var b_to = pair.original;
-			// drawBubble(b_from);
-			strokeWeight(b_from.radius * 0.9);
-			stroke(nodeColorStroke.concat(b_from.opacity));
-			line(b_from.x, b_from.y, b_to.x, b_to.y);
-		});
-	});
-}
-
-function drawLink(d) {
-	stroke(linkColor);
-	strokeWeight(2);
-	line(d.source.x, d.source.y, d.target.x, d.target.y);
-}
-
-function drawNode(d) {
-	//bg - cover tip of link
-	noStroke();
-	fill(bgColor);
-	ellipse(d.x, d.y, d.radius, d.radius);
-
-	d.colorStroke = nodeColorStroke.concat([d.opacity]);
-	strokeWeight(1);
-	drawBubble(d);
-}
-
-function drawShockOverlay() {
-	var shouldIncreaseAlpha = bubblesApproaching.length > 0 && shockOverlayAlpha < shockOverlayAlphaMax;
-	var shouldDecreaseAlpha = bubblesApproaching.length === 0 && shockOverlayAlpha > 0;
-	if (shouldIncreaseAlpha) {
-		shockOverlayAlpha += shockOverlayAlphaDecayInc;
-	}
-	if (shouldDecreaseAlpha) {
-		shockOverlayAlpha -= shockOverlayAlphaDecayDec;
-	}
-
-	background(shockOverlayColor.concat([shockOverlayAlpha]));
-}
-
-function windowResized() {
-	var side = min(windowWidth, windowHeight) * 0.7;
-	resizeCanvas(side, side);
-	simulation.force("center", d3.forceCenter(width / 2, height / 2));
-}
-
-// ----- BUBBLES and Adding to Graph -------- //
-
 function initBubbles() {
 	creationInterval = setInterval(function () {
 		createBubble();
-		if (nodes.length > maxNumberNodes) {
+		if (nodes.length > maxNumberNodesAutoGen) {
 			clearInterval(creationInterval);
 		}
 	}, creationIntervalDuration);
@@ -166,14 +153,19 @@ function createBubble() {
 	    x = _findProperPosForBubb.x,
 	    y = _findProperPosForBubb.y;
 
-	var maxRadius = nodeRadiusMin + round(random(nodeRadiusAdded));
-	// const maxRadius = nodeRadiusMin + nodeRadiusAdded*0.5;
+	var maxRadius = bubbleRadiusMin + round(random(bubbleRadiusMore));
 	var initialRadius = 1;
 	var dx = x > width / 2 ? map(random(), 0, 1, -2, 0) : map(random(), 0, 1, 0, 2);
 	var dy = y > height / 2 ? map(random(), 0, 1, -2, 0) : map(random(), 0, 1, 0, 2);
 	var opacity = initialOpacity;
 	var bubble = new Bubble(x, y, initialRadius, dx, dy, opacity, maxRadius, bubbleColorFill);
 	bubbles.push(bubble);
+}
+
+function createManyBubbles() {
+	for (var i = 0; i < bubbleRainSetSize; i++) {
+		createBubble();
+	}
 }
 
 function updateBubbles() {
@@ -191,66 +183,13 @@ function updateBubbles() {
 	});
 }
 
-function updateTracingBubbles() {
-
-	tracingBubbleGroups.forEach(function (group, index) {
-		// fade out all nodes in group
-		group.forEach(function (pair) {
-			var b = pair.traced;
-			b.opacity = max(0, b.opacity - fadeOutTracingStep);
-		});
-		// fade out done? (first node is sufficient checking)
-		if (group[0].traced.opacity === 0) {
-			// eliminate group
-			tracingBubbleGroups.splice(index, 1);
-		}
-	});
-}
-
 function tryAddToGraph(bubble) {
 	var closestNode = simulation.find(bubble.x, bubble.y);
 	var d = dist(bubble.x, bubble.y, closestNode.x, closestNode.y);
-	if (useShockOverlay) {
-		checkApproachingForOverlay();
-	}
 	if (d <= addGraphDist) {
 		makeGraphCandidate(bubble, closestNode);
 	} else {
 		pullTowardsNode(bubble, closestNode, d);
-	}
-}
-
-function checkApproachingForOverlay(bubble, distanceToANode) {
-	var registeredAsApproaching = bubblesApproaching.indexOf(bubble) !== -1;
-	if (distanceToANode <= overlayPrepDist && !registeredAsApproaching) {
-		bubblesApproaching.push(bubble);
-	}
-}
-
-function addCandidates() {
-	var addedAny = false;
-	bubblesToAdd.forEach(function (_ref) {
-		var bub = _ref.bubble,
-		    mate = _ref.mateInGraph;
-
-		addedAny = true;
-		bub.id = nodeCounter;
-		bub.colorStroke = nodeColorStroke;
-		nodes.push(bub);
-		nodeCounter++;
-		links.push({
-			source: bub,
-			target: mate
-		});
-	});
-
-	if (addedAny) {
-		shockOverlayAlpha = shockOverlayAlphaMax;
-		updateSimulation();
-
-		bubblesToAdd.splice(0);
-
-		createTracingCandidates();
 	}
 }
 
@@ -261,10 +200,6 @@ function makeGraphCandidate(bubble, closestNode) {
 	});
 
 	bubbles.splice(bubbles.indexOf(bubble), 1);
-
-	if (useShockOverlay) {
-		bubblesApproaching.splice(bubblesApproaching.indexOf(bubble), 1);
-	}
 }
 
 function pullTowardsNode(bubble, closestNode, distance) {
@@ -275,32 +210,86 @@ function pullTowardsNode(bubble, closestNode, distance) {
 	bubble.dy += isBubbleAbove ? forceVal : -forceVal;
 }
 
-function createTracingCandidates() {
-	var candidates = nodes.map(function (node) {
-		var newNode = node.clone();
-		// newNode.opacity = initialTraceOpacity;
-		var pair = {
-			traced: newNode,
-			original: node
-		};
-		return pair;
+function addCandidates() {
+	var addedAny = false;
+	bubblesToAdd.forEach(function (_ref) {
+		var bub = _ref.bubble,
+		    mate = _ref.mateInGraph;
+
+		addedAny = true;
+		bub.id = nodeCounter++;
+		bub.colorStroke = nodeColorStroke;
+		nodes.push(bub);
+		links.push({
+			source: bub,
+			target: mate
+		});
 	});
-	tracingCandidates = candidates;
+
+	if (addedAny) {
+		updateSimulation(true);
+
+		bubblesToAdd.splice(0);
+
+		createTracingPairs();
+	}
 }
 
 // ------- GRAPH & SIMULATION ---------- //
 
+function drawNode(d) {
+	//bg - cover tip of link
+	noStroke();
+	fill(bgColor);
+	ellipse(d.x, d.y, d.radius, d.radius);
+
+	d.colorStroke = nodeColorStroke.concat([d.opacity]);
+	strokeWeight(1);
+	drawBubble(d);
+}
+
+function drawLink(d) {
+	stroke(linkColor);
+	strokeWeight(2);
+	line(d.source.x, d.source.y, d.target.x, d.target.y);
+}
+
 function initGraph() {
-	var rootNode = new Bubble(width / 2, height / 2, nodeRadiusMin * 2, 0, 0, 1, nodeRadiusMin * 2, nodeColorFill);
-	rootNode.id = 0;
+	var rootNode = new Bubble(width / 2, height / 2, bubbleRadiusMin * 3, // initial radius
+	0, //dx
+	0, //dy
+	1, //opacity
+	0, // maxRadius
+	nodeColorFill);
+	rootNode.id = nodeCounter++;
 	rootNode.colorStroke = nodeColorStroke;
 	nodes.push(rootNode);
 }
 
-function initSimulation() {
-	simulation = d3.forceSimulation().velocityDecay(velocityDecay).force("link", d3.forceLink().distance(distanceLink).strength(forceStrengthLink)).force("charge", d3.forceManyBody().strength(forceStrengthManyBody)).force("collision", d3.forceCollide().radius(function (node) {
+function initSimValues() {
+	currentDistanceLink = distanceLink;
+	currentStrengthLink = forceStrengthLink;
+	currentStrengthManyBody = forceStrengthManyBody;
+	currentVelocityDecay = velocityDecay;
+	currentUpdateAlphaTarget = simUpdateAlphaTarget;
+	nextShaken = 0;
+}
+
+function applySimValues() {
+	if (!simulation) {
+		return;
+	}
+
+	simulation.velocityDecay(currentVelocityDecay).force("link", d3.forceLink().distance(currentDistanceLink).strength(currentStrengthLink)).force("charge", d3.forceManyBody().strength(currentStrengthManyBody)).force("collision", d3.forceCollide().radius(function (node) {
 		return node.radius + 10;
 	})).force("center", d3.forceCenter(width / 2, height / 2));
+}
+
+function initSimulation() {
+	initSimValues();
+
+	simulation = d3.forceSimulation();
+	applySimValues();
 
 	simulation.nodes(nodes).on("tick", function () {
 		return onTick();
@@ -309,16 +298,18 @@ function initSimulation() {
 	simulation.force("link").links(links);
 }
 
-function updateSimulation() {
+function updateSimulation(withTraces) {
 	simulation.nodes(nodes).on("tick", function () {
 		return onTick();
 	});
 	simulation.force("link").links(links);
-	simulation.alphaTarget(simUpdateAlphaTarget).restart();
-	nodes.forEach(function (node) {
-		return node.opacity = 0.8;
-	});
-	addTracesIterCounter = 0;
+	simulation.alphaTarget(currentUpdateAlphaTarget).restart();
+	if (withTraces) {
+		nodes.forEach(function (node) {
+			return node.opacity = 0.8;
+		});
+		addTracesIterCounter = 0;
+	}
 }
 
 function onTick() {
@@ -330,14 +321,65 @@ function updateOpacities() {
 		return node.opacity = min(1, node.opacity + fadeInStep * 4);
 	});
 }
+
+function agitate() {
+	if (heated < maxHeat) {
+		heated++;
+		heatCounterDOM.elt.textContent = heated;
+
+		currentVelocityDecay -= velocityDecayDiff;
+		currentStrengthManyBody += 5;
+		simulation.velocityDecay(currentVelocityDecay).force("charge", d3.forceManyBody().strength(currentStrengthManyBody));
+		// simulation.alphaTarget(0.9).restart();
+	}
+}
+
+function cool() {
+	if (heated > -maxHeat) {
+		heated--;
+		heatCounterDOM.elt.textContent = heated;
+
+		currentVelocityDecay += velocityDecayDiff;
+		currentStrengthManyBody -= 5;
+		simulation.velocityDecay(currentVelocityDecay).force("charge", d3.forceManyBody().strength(currentStrengthManyBody));
+		// simulation.alphaTarget(0.4).restart();
+	}
+}
+
+function shakeUp() {
+	if (!nodes) {
+		return;
+	}
+	nodes.forEach(function (node) {
+		node.x += (node.x - width * 0.5) / (width * 0.5) * 200;
+		node.y += (node.y - height * 0.5) / (height * 0.5) * 200;
+	});
+	currentUpdateAlphaTarget = 0.8;
+	updateSimulation(false); // not with traces
+}
+
+// -------- TRACING FX ------------ //
+
+function createTracingPairs() {
+	var candidates = nodes.map(function (node) {
+		var newNode = node.clone();
+		var pair = {
+			traced: newNode,
+			original: node
+		};
+		return pair;
+	});
+	tracingPairs = candidates;
+}
+
 function createTraces() {
-	// create actual traces from candidates. 
+	// create actual traces from tracingCandidates. 
 	// there should be tracingCandidates available if the iterationCounter is below the max
 	// when it's 0, the tracingCandidates were created in addCandidates
 	// when it's >=1, the tracingCandidates were created here, in createTraces
 	if (addTracesIterCounter < addTracesIterations) {
 		var newGroup = [];
-		tracingCandidates.forEach(function (pair) {
+		tracingPairs.forEach(function (pair) {
 			newGroup.push(pair);
 		});
 
@@ -346,12 +388,39 @@ function createTraces() {
 			pair.traced.colorFill = traceColor;
 		});
 
-		tracingBubbleGroups.push(newGroup);
+		traceGroups.push(newGroup);
 
 		// prepare another set of tracingCandidates
-		createTracingCandidates();
+		createTracingPairs();
 		addTracesIterCounter++;
 	}
+}
+
+function updateTraces() {
+	traceGroups.forEach(function (group, index) {
+		// all nodes in group, fade out one step
+		group.forEach(function (pair) {
+			var b = pair.traced;
+			b.opacity = max(0, b.opacity - fadeOutTracingStep);
+		});
+		// faded out completely? (first node is sufficient checking)
+		if (group[0].traced.opacity === 0) {
+			// eliminate group
+			traceGroups.splice(index, 1);
+		}
+	});
+}
+
+function drawTraces() {
+	traceGroups.forEach(function (group) {
+		return group.forEach(function (pair) {
+			var b_from = pair.traced;
+			var b_to = pair.original;
+			strokeWeight(b_from.radius * 0.9);
+			stroke(nodeColorStroke.concat(b_from.opacity));
+			line(b_from.x, b_from.y, b_to.x, b_to.y);
+		});
+	});
 }
 
 // ------- AUX -------- //
@@ -379,6 +448,27 @@ function attractionForce(b_from, b_on, distance) {
 	return b_on.radius * b_from.radius / distance ** distanceExp * myFactor;
 }
 
-function mouseClicked() {
-	simulation.alphaTarget(0.85).restart();
+// -------- STRUCTURE CONTROL ----------- //
+
+function resetGrande() {
+	nodeCounter = 0;
+	heated = 0;
+	clearInterval(creationInterval);
+	creationInterval = null;
+
+	bubbles.splice(0);
+	bubblesToAdd.splice(0);
+	traceGroups.splice(0);
+	nodes.splice(0);
+	links.splice(0);
+
+	tracingPairs = [];
+	addTracesIterCounter = addTracesIterations;
+
+	initGraph();
+	simulation.stop();
+	initSimulation();
+	initBubbles();
+
+	fadeInAllOpacity = fadeInAllStartOpacity;
 }
