@@ -13,10 +13,10 @@ const simUpdateAlphaTarget = 0.6,
 		  forceStrengthManyBody = .8,
 			forceStrengthLink =	0.5,
 			distanceLink = 30,
-			velocityDecay = 0.4,
+			velocityDecay = 0.5,
 			velocityDecayDiff = 0.03,
 
-			addGraphDist = 50,
+			addGraphDist = 30,
 			overlayPrepDist = 70,
 			myFactor = 30,		// control value of attraction force of bubbles into graph
 			distanceExp = 2.4, // exponent of attractionForce variation (2 = quadratic - as in coulomb force - , 3 = cubic etc.)
