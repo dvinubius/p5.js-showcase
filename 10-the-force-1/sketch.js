@@ -1,5 +1,7 @@
 "use strict";
 
+function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
+
 // ------- FADE IN ALL
 
 var fadeInAllStartOpacity = 1,
@@ -111,7 +113,7 @@ function draw() {
 
 	// FADING IN?
 	if (fadeInAllOpacity > 0) {
-		background(fadeInAllColor.concat([fadeInAllOpacity]));
+		background.apply(undefined, fadeInAllColor.concat([fadeInAllOpacity]));
 		fadeInAllOpacity = max(0, fadeInAllOpacity - fadeInAllStep);
 	}
 }
@@ -126,12 +128,16 @@ function windowResized() {
 
 function drawBubble(b) {
 	if (b.colorFill) {
-		fill(b.colorFill.concat([b.opacity]));
+		fill.apply(undefined, _toConsumableArray(b.colorFill).concat([b.opacity]));
 	} else {
 		noFill();
 	}
 	if (b.colorStroke) {
-		stroke(b.colorStroke);
+		if (b.opacity) {
+			stroke.apply(undefined, _toConsumableArray(b.colorStroke).concat([b.opacity]));
+		} else {
+			stroke(b.colorStroke);
+		}
 	} else {
 		noStroke();
 	}
@@ -243,7 +249,6 @@ function drawNode(d) {
 	fill(bgColor);
 	ellipse(d.x, d.y, d.radius, d.radius);
 
-	d.colorStroke = nodeColorStroke.concat([d.opacity]);
 	strokeWeight(1);
 	drawBubble(d);
 }
@@ -417,7 +422,7 @@ function drawTraces() {
 			var b_from = pair.traced;
 			var b_to = pair.original;
 			strokeWeight(b_from.radius * 0.9);
-			stroke(nodeColorStroke.concat(b_from.opacity));
+			stroke.apply(undefined, nodeColorStroke.concat([b_from.opacity]));
 			line(b_from.x, b_from.y, b_to.x, b_to.y);
 		});
 	});

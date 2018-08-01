@@ -104,7 +104,7 @@ function draw() {
 
 	// FADING IN?
 	if (fadeInAllOpacity > 0) {
-		background(fadeInAllColor.concat([fadeInAllOpacity]));
+		background(...fadeInAllColor, fadeInAllOpacity);
 		fadeInAllOpacity = max(0,fadeInAllOpacity - fadeInAllStep);
 	}
 }
@@ -119,12 +119,16 @@ function windowResized() {
 
 function drawBubble(b) {
 	if (b.colorFill) {
-		fill(b.colorFill.concat([b.opacity]));
+		fill(...b.colorFill, b.opacity);
 	} else {
 		noFill();
 	}
 	if (b.colorStroke) {
-		stroke(b.colorStroke);
+		if (b.opacity) {
+			stroke(...b.colorStroke, b.opacity);
+		} else {
+			stroke(b.colorStroke);
+		}
 	} else {
 		noStroke();
 	}
@@ -230,7 +234,6 @@ function drawNode(d) {
 	fill(bgColor); 
 	ellipse(d.x, d.y, d.radius, d.radius);
 
-	d.colorStroke = nodeColorStroke.concat([d.opacity]);	
 	strokeWeight(1);
   drawBubble(d);
 }
@@ -410,7 +413,7 @@ function drawTraces() {
 		const b_from = pair.traced;
 		const b_to = pair.original;
 		strokeWeight(b_from.radius*0.9);
-		stroke(nodeColorStroke.concat(b_from.opacity));
+		stroke(...nodeColorStroke, b_from.opacity);
 		line(b_from.x, b_from.y, b_to.x, b_to.y);
 	}));
 }

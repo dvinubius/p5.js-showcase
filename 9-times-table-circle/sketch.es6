@@ -153,7 +153,6 @@ function drawLines() {
 function drawTracing(x,y,x2,y2) {
 	const steps = 20;
 	const trColor = randomTraceColor();
-	const trColorAlpha = trColor.concat([traceColorsAlpha]);
 	stroke(bgColorCircle);
 	strokeWeight(4);
 	for (let i = 1 ; i <= steps; i++) {
@@ -162,7 +161,7 @@ function drawTracing(x,y,x2,y2) {
 		const radius = 4 + (steps-i)*0.5;
 		fill(bgColorCircle);
 		ellipse(xInter, yInter, radius, radius);
-		fill(trColorAlpha);
+		fill(...trColor, traceColorsAlpha);
 		noStroke();
 		ellipse(xInter, yInter, radius, radius);
 	}

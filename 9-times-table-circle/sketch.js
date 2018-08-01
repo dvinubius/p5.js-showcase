@@ -1,5 +1,7 @@
 'use strict';
 
+function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
+
 var HALT = 'HALT';
 var ONCE = 'ONCE';
 var RUN = 'RUN';
@@ -150,7 +152,6 @@ function drawLines() {
 function drawTracing(x, y, x2, y2) {
 	var steps = 20;
 	var trColor = randomTraceColor();
-	var trColorAlpha = trColor.concat([traceColorsAlpha]);
 	stroke(bgColorCircle);
 	strokeWeight(4);
 	for (var i = 1; i <= steps; i++) {
@@ -159,7 +160,7 @@ function drawTracing(x, y, x2, y2) {
 		var _radius = 4 + (steps - i) * 0.5;
 		fill(bgColorCircle);
 		ellipse(xInter, yInter, _radius, _radius);
-		fill(trColorAlpha);
+		fill.apply(undefined, _toConsumableArray(trColor).concat([traceColorsAlpha]));
 		noStroke();
 		ellipse(xInter, yInter, _radius, _radius);
 	}
