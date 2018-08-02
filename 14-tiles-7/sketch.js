@@ -3,13 +3,15 @@
 function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
 
 var backgroundCol = [240, 240, 255];
-var basicStrokeCol = [20, 20, 10, 0.4];
+var basicStrokeCol = [20, 20, 10, 0.8];
 var tileGrid = void 0;
 var config = void 0;
 var gridSize = 12;
 
 var levelsPerTile = 3;
 var stopsPerTile = 2;
+var minThickness = 2;
+var maxThickness = 6;
 
 function setup() {
 	createCanvas(windowWidth, windowHeight);
@@ -26,7 +28,8 @@ function draw() {
 
 	tileGrid.applyEach(drawTile);
 
-	for (var i = 0; i < 2; i++) {
+	// repeat overlapping grid
+	for (var i = 0; i < 1; i++) {
 		createMyTileGrid();
 		tileGrid.applyEach(drawTile);
 	}
@@ -37,7 +40,7 @@ function draw() {
 function createMyTileGrid() {
 	tileGrid = TileGrid.createInstance(config);
 	tileGrid.applyEach(function (tile) {
-		return tile.strokeWeight = floor(random(1, 6));
+		return tile.strokeWeight = floor(random(minThickness, maxThickness));
 	});
 	tileGrid.applyEach(function (tile) {
 		return tile.strokeCol = basicStrokeCol;

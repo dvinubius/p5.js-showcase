@@ -1,11 +1,13 @@
 const backgroundCol = 			[240,240,255];
-const basicStrokeCol = 			[20,20,10,0.4];
+const basicStrokeCol = 			[20,20,10,0.8];
 let tileGrid;
 let config;
 let gridSize = 12;
 
 const levelsPerTile = 3;
 const stopsPerTile = 2;
+const minThickness = 2;
+const maxThickness = 6;
 
 function setup() {
 	createCanvas(windowWidth, windowHeight);
@@ -24,7 +26,8 @@ function draw() {
 	
 	tileGrid.applyEach(drawTile);	
 	
-	for (let i = 0; i < 2; i++) {
+	// repeat overlapping grid
+	for (let i = 0; i < 1; i++) {
 		createMyTileGrid();
 		tileGrid.applyEach(drawTile);
 	}
@@ -34,7 +37,7 @@ function draw() {
 
 function createMyTileGrid() {
 	tileGrid = TileGrid.createInstance(config);
-	tileGrid.applyEach(tile => tile.strokeWeight = floor(random(1,6)));
+	tileGrid.applyEach(tile => tile.strokeWeight = floor(random(minThickness,maxThickness)));
 	tileGrid.applyEach(tile => tile.strokeCol = basicStrokeCol);
 
 
