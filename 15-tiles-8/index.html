@@ -18,7 +18,7 @@
 
 	<style>
 		:root {
-			--col-controls: rgb(30,0,10);
+			--col-controls: rgb(170, 230, 120);
 		}
 
 		* {
@@ -37,6 +37,9 @@
 		}
 
 	.control-wrapper {
+		--color: var(--col-controls); 
+		color: var(--color);
+
 		position: absolute;
 		top: 20px;
 		right: 20px;
@@ -51,14 +54,13 @@
 		border-radius: 5px;
 	}
 	.btn {
-		--color: var(--col-controls); 
 		--inset: 1px;
 		padding: 8px 16px;
 		margin: 8px 16px;
 		font-size: 1em;
 		min-width: 6em;
 		background-color: transparent;
-		color: var(--color);
+ 		color: var(--color);
 		border: 1px solid var(--color);
 		border-radius: 5px;
 		transition: all .15s ease-in-out;
