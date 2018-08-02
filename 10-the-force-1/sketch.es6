@@ -80,8 +80,7 @@ function setup() {
 	initBubbles();
 	colorMode(RGB, 255, 255, 255, 1);
 	heatCounterDOM = select('#heat-counter');
-	console.log(heatCounterDOM.elt);
-	heatCounterDOM.elt.textContent = heated;
+	heatCounterDOM.html(heated);
 }
 
 // ------- p5.js LOOP
@@ -318,7 +317,7 @@ function updateOpacities() {
 function agitate() {
 	if (heated < maxHeat) {
 		heated++;
-		heatCounterDOM.elt.textContent = heated;
+		heatCounterDOM.html(heated);
 
 		currentVelocityDecay -= velocityDecayDiff;
 		currentStrengthManyBody += 5;
@@ -332,7 +331,7 @@ function agitate() {
 function cool() {
 	if (heated > -maxHeat) {
 		heated--;
-		heatCounterDOM.elt.textContent = heated;
+		heatCounterDOM.html(heated);
 
 		currentVelocityDecay += velocityDecayDiff;
 		currentStrengthManyBody -= 5;

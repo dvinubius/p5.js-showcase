@@ -19,7 +19,7 @@ function setup() {
 
 	strokeWeight(2);
 	initCircle();
-	colorMode(RGB, 255, 255, 255, 1)
+	colorMode(RGB, 255, 255, 255, 1);
 }
 
 function draw() {

@@ -63,7 +63,7 @@ function drawTile(tile) {
 		var stepY = tile.size / (commandVals.length - 1);
 		return commandVals.map(function (command, index) {
 			return {
-				x: tile.x + stepX * (command % stops),
+				x: tile.x + stepX * command,
 				y: tile.y + stepY * index
 			};
 		});

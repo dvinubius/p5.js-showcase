@@ -55,7 +55,7 @@ function drawTile(tile) {
 		const stepX = tile.size/(stops-1);
 		const stepY = tile.size/(commandVals.length-1);
 		return commandVals.map((command, index) => ({
-			x: tile.x + stepX * (command % stops),
+			x: tile.x + stepX * command,
 			y: tile.y + stepY * index
 		}));
 	}
