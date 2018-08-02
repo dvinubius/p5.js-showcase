@@ -1,19 +1,17 @@
 "use strict";
 
 // palette
-// $color1: rgba(255, 200, 87, 1);
-// $color2: rgba(233, 114, 76, 1);
-// $color3: rgba(197, 40, 61, 1);
-// $color4: rgba(72, 29, 36, 1);
-// $color5: rgba(37, 95, 133, 1);
+// $color1: rgba(211, 189, 176, 1);
+// $color2: rgba(193, 174, 159, 1);
+// $color3: rgba(137, 147, 124, 1);
+// $color4: rgba(113, 91, 100, 1);
+// $color5: rgba(105, 56, 92, 1);
 
 
-var backgroundCol = [255, 200, 87, 1];
-var basicStrokeCol = [37, 95, 133, 1];
-var secondStrokeCol = [72, 29, 36, 1];
-var thirdStrokeCol = [197, 40, 61];
-var fillCol = [233, 114, 76];
-var strokeCols = [basicStrokeCol, secondStrokeCol, thirdStrokeCol];
+var backgroundCol = [255, 255, 255, 1];
+var basicStrokeCol = [105, 56, 92, 1];
+var strokeCol2 = [193, 174, 159];
+var fillCol = [137, 147, 124];
 var tileGrid = void 0;
 var config = void 0;
 var gridSize = 42;
@@ -56,22 +54,26 @@ function createCommandValGrid(size) {
 	for (var i = 0; i < size; i++) {
 		vals[i] = [];
 		for (var j = 0; j < size; j++) {
-			vals[i][j] = floor(random(0, 3));
+			var rand = floor(random(0, 3000));
+			vals[i][j] = rand < 2200 ? 0 : rand < 2985 ? 1 : 2;
 		}
 	}
 	return Grid.createFromMatrix(vals);
 }
 
 function drawTile(tile) {
+	stroke(basicStrokeCol);
+	// strokeWeight(minThickness);
+	strokeWeight(random([minThickness, maxThickness]));
 
 	if (tile.isEvenCol()) {
 		if (tile.direction === 0) {
-			strokeWeight(minThickness);
-			stroke(basicStrokeCol);
+			// stroke(strokeCol2);
+			// strokeWeight(minThickness);
 			// draw line
 			line(tile.x + tile.size * 0.5, tile.y, tile.x + tile.size * 0.5, tile.y + tile.size);
 		} else {
-			var gutter = 0;
+			var gutter = 1;
 			// triangle
 			var p1 = {},
 			    p2 = {},
@@ -83,6 +85,7 @@ function drawTile(tile) {
 				p2.y = tile.y + gutter;
 				p3.x = tile.x + tile.size * 0.5;
 				p3.y = tile.y + tile.size - gutter;
+				noFill();
 			} else {
 				p1.x = tile.x + tile.size * 0.5;
 				p1.y = tile.y + gutter;
@@ -90,11 +93,9 @@ function drawTile(tile) {
 				p2.y = tile.y + tile.size - gutter;
 				p3.x = tile.x + tile.size;
 				p3.y = tile.y + tile.size - gutter;
+				fill(fillCol);
+				noStroke();
 			}
-			var col = random([strokeCols[1], strokeCols[2]]);
-			noStroke();
-			strokeWeight(maxThickness);
-			fill(col);
 			triangle(p1.x, p1.y, p2.x, p2.y, p3.x, p3.y);
 		}
 	}
