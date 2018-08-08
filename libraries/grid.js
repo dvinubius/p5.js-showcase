@@ -38,7 +38,8 @@
     }
   }
   Grid.prototype.set = function(x,y,val) {
-    if (0 <= x < this.gridSize && 0 < y < this.gridSize) {
+    if (0 <= x && x < this.gridSize &&
+        0 <= y && y < this.gridSize) {
       this.gridValues[y * this.gridSize + x] = val;
       return true;
     } else {

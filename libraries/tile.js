@@ -21,7 +21,7 @@
   Tile.prototype.isEvenRow = function() {
     return this.yInGrid % 2 === 0;
   }
-
+  
   // expose in window
   context.Tile = Tile;
 })(window);

@@ -119,6 +119,17 @@
         this.length);        
   }
 
+  TileGrid.prototype.changePos = function(x,y) {
+    const diffX = x - this.x;
+    const diffY = y - this.y;
+    this.x = x;
+    this.y = y;
+    this.gridValues.forEach(tile => {
+      tile.x = tile.x + diffX;
+      tile.y = tile.y + diffY;
+    });
+  }
+
   // expose in window
   context.TileGrid = TileGrid;  
 })(window);
