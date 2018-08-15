@@ -11,7 +11,7 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 // $color5: rgba(83, 77, 65, 1);
 
 // const bgCol = [41, 51, 92];
-var bgCol = [240, 206, 160];
+var bgCol = [83, 77, 65];
 var strokeCol = [41, 51, 92];
 var fillCol = [219, 43, 57];
 

@@ -5,7 +5,7 @@
 // $color5: rgba(83, 77, 65, 1);
 
 // const bgCol = [41, 51, 92];
-const bgCol = [240, 206, 160];
+const bgCol = [83, 77, 65];
 const strokeCol = [41, 51, 92];
 const fillCol = [219, 43, 57];
 
