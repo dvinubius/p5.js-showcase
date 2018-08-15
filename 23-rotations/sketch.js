@@ -33,8 +33,8 @@ function setup() {
 	createScaffolds();
 
 	slider = createSlider(0, TWO_PI, 0, 0.1);
-	slider.position(150, 410);
-	slider.style('width', '280px');
+	slider.position(width * 0.1, height * 0.1);
+	slider.size(width * 0.07);
 	slider.style('outline', 'none');
 
 	background(bgCol);
@@ -50,7 +50,6 @@ function draw() {
 
 	scaffoldObjects.forEach(function (obj, index) {
 		obj.rotation = (1 - index / scaffoldObjects.length) * slider.value();
-		console.log(obj);
 		obj.decoDraw();
 	});
 }
@@ -129,5 +128,7 @@ var Point = function Point(x, y) {
 function windowResized() {
 	createCanvas(windowWidth, windowHeight);
 	createScaffolds();
+	slider.position(width * 0.1, height * 0.1);
+	slider.size(width * 0.07);
 	background(bgCol);
 }
