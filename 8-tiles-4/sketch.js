@@ -2,13 +2,17 @@
 
 function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
 
-var backgroundCol = [10, 10, 10];
-// const basicStrokeCol = [40,210,90];
-var basicStrokeCol = [210, 80, 110];
-var circleStrokeCol = [75, 167, 0];
-// const fillCol = [210,90,30];
-var fillCol = [240, 219, 210];
-var fillColInside = [10, 10, 10];
+// $color1: rgba(136, 162, 170, 1);
+// $color2: rgba(173, 162, 150, 1);
+// $color3: rgba(226, 133, 110, 1);
+// $color4: rgba(244, 44, 4, 1);
+// $color5: rgba(15, 26, 32, 1);
+
+
+var backgroundCol = [15, 26, 32];
+var basicStrokeCol = [226, 133, 110];
+var circleStrokeCol = [244, 44, 4];
+var fillCol = [136, 162, 170];
 
 var minStrokeWeightEdge = 0.33;
 var minStrokeWeightCircle = 0.33;
@@ -42,7 +46,6 @@ function draw() {
 	background.apply(undefined, backgroundCol);
 	tileGrid.applyEach(drawTileLayer1);
 	tileGrid.applyEach(drawTileLayer2);
-	tileGrid.applyEach(drawTileLayer3);
 }
 
 function createMyTileGrid() {
@@ -78,16 +81,6 @@ function drawTileLayer2(tile) {
 	stroke.apply(undefined, circleStrokeCol);
 	fill.apply(undefined, fillCol);
 	ellipse(tile.x, tile.y, minCircleRad * scale1 * scaleP);
-}
-
-function drawTileLayer3(tile) {
-
-	var scale1 = map(distXToOrigin, 0, width, 1, scaleCircleRadInside);
-	var scaleP = scalePerspectiveForTile(tile);
-
-	noStroke();
-	fill.apply(undefined, fillColInside);
-	ellipse(tile.x, tile.y, 5, minCircleRadInside * scale1 * scaleP);
 }
 
 function scalePerspectiveForTile(tile) {

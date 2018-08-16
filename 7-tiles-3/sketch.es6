@@ -1,9 +1,15 @@
-const backgroundCol = [10,60,110];
-const basicStrokeCol = [250,110,50];
-const circleStrokeCol = [80,0,0];
-// const fillCol = [220,140,80];
-// const fillCol2 = [240,110,40];
-const fillCol = [220,230,210];
+
+// $color1: rgba(212, 150, 167, 1);
+// $color2: rgba(157, 105, 90, 1);
+// $color3: rgba(120, 224, 220, 1);
+// $color4: rgba(142, 237, 247, 1);
+// $color5: rgba(161, 205, 241, 1);
+
+const backgroundCol = [157, 105, 90];
+const basicStrokeCol = [120, 224, 220];
+const circleStrokeCol = [157, 105, 9];
+const fillCol = [142, 237, 247];
+
 const minStrokeWeight = 1;
 const maxStrokeWeight = 6;
 const minCircleRad = 5;

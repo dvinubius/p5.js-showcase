@@ -1,10 +1,15 @@
-const backgroundCol = [10,10,10];
-// const basicStrokeCol = [40,210,90];
-const basicStrokeCol = [210,80,110];
-const circleStrokeCol = [75, 167, 0];
-// const fillCol = [210,90,30];
-const fillCol = [240,219,210];
-const fillColInside = [10,10,10];
+
+// $color1: rgba(136, 162, 170, 1);
+// $color2: rgba(173, 162, 150, 1);
+// $color3: rgba(226, 133, 110, 1);
+// $color4: rgba(244, 44, 4, 1);
+// $color5: rgba(15, 26, 32, 1);
+
+
+const backgroundCol = [15, 26, 32];
+const basicStrokeCol = [226, 133, 110];
+const circleStrokeCol = [244, 44, 4];
+const fillCol = [136, 162, 170];
 
 const minStrokeWeightEdge = 0.33;
 const minStrokeWeightCircle = 0.33;
@@ -38,7 +43,6 @@ function draw() {
 	background(...backgroundCol);
 	tileGrid.applyEach(drawTileLayer1);
 	tileGrid.applyEach(drawTileLayer2);
-	tileGrid.applyEach(drawTileLayer3);
 }
 
 function createMyTileGrid() {
@@ -75,15 +79,6 @@ function drawTileLayer2(tile) {
 	ellipse(tile.x, tile.y, minCircleRad*scale1*scaleP);
 }
 
-function drawTileLayer3(tile) {
-
-	const scale1 = map(distXToOrigin, 0, width, 1, scaleCircleRadInside); 
-	const scaleP = scalePerspectiveForTile(tile);
-
-	noStroke();
-	fill(...fillColInside);
-	ellipse(tile.x, tile.y, 5, minCircleRadInside*scale1*scaleP);
-}
 
 function scalePerspectiveForTile(tile) {
 	const distTileToOrigin = dist(tile.x, tile.y, tileGrid.x, tileGrid.y);

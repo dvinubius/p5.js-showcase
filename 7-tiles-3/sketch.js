@@ -2,12 +2,17 @@
 
 function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
 
-var backgroundCol = [10, 60, 110];
-var basicStrokeCol = [250, 110, 50];
-var circleStrokeCol = [80, 0, 0];
-// const fillCol = [220,140,80];
-// const fillCol2 = [240,110,40];
-var fillCol = [220, 230, 210];
+// $color1: rgba(212, 150, 167, 1);
+// $color2: rgba(157, 105, 90, 1);
+// $color3: rgba(120, 224, 220, 1);
+// $color4: rgba(142, 237, 247, 1);
+// $color5: rgba(161, 205, 241, 1);
+
+var backgroundCol = [157, 105, 90];
+var basicStrokeCol = [120, 224, 220];
+var circleStrokeCol = [157, 105, 9];
+var fillCol = [142, 237, 247];
+
 var minStrokeWeight = 1;
 var maxStrokeWeight = 6;
 var minCircleRad = 5;
