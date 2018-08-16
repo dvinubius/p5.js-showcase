@@ -1,22 +1,29 @@
 'use strict';
 
-var baseDiam = 1200;
+var radius = 600;
 var n = 2;
 var d = 5;
 var k = n / d;
 
-var step = 0.02;
+var step = 0.04;
 
 var pathPoints = void 0;
-var index = 0;
+var pathAngles = void 0;
+var pathDrawn = void 0;
 
-var bgCol = [55, 5, 20];
-var strokeCol = [60, 203, 80];
+var index = 0;
+var rotation = 0.001;
+
+var bgCol = [200, 203, 210];
+var strokeCol = [15, 5, 10];
+var strokeCol2 = [200, 35, 10];
+var controlsOffset = 100;
 
 var sliderN = void 0;
 var sliderD = void 0;
 var valLabelN = void 0;
 var valLabelD = void 0;
+var valLabelTheta = void 0;
 
 function setup() {
 	createCanvas(windowWidth, windowHeight);
@@ -36,43 +43,77 @@ function draw() {
 
 	translate(width / 2, height / 2);
 
-	stroke(0, 0, 0, 0.1);
-	noFill();
+	// draw circleframe and all points shown so far,
+	//  unless final shape is complete
+	if (index < pathPoints.length) {
+		background(bgCol);
 
-	var v = pathPoints[index++];
-	if (!v) {
-		background(bgCol.concat(0.2));
-		strokeWeight(1);
-		stroke(strokeCol);
-		endShape(CLOSE);
-	} else {
+		noFill();
+		ellipse(0, 0, radius, radius);
+
 		noStroke();
 		fill.apply(undefined, strokeCol.concat([0.6]));
+		pathDrawn.forEach(function (vector) {
+			ellipse(vector.x, vector.y, 3, 3);
+		});
+	} else {
+		background.apply(undefined, bgCol.concat([0.18]));
+	}
+
+	// grab new point from path
+	var v = pathPoints[index];
+	var theta = pathAngles[index];
+	index++;
+
+	if (!v) {
+		// no more points => done
+		rotate(rotation);
+		var variable = Math.pow(rotation, 1.6);
+		rotation += min(0.005, variable);
+		strokeWeight(1);
+		stroke(strokeCol2);
+		noFill();
+		endShape(CLOSE);
+	} else {
+		// draw next point
 		ellipse(v.x, v.y, 3, 3);
-		vertex(v.x, v.y);
+		vertex(v.x, v.y); // add vertex for drawing the final shape
+		pathDrawn.push(v); // remember this point as being shown already
+
+		// draw visual aid line
+		var x = cos(theta) * radius / 2;
+		var y = sin(theta) * radius / 2;
+		stroke.apply(undefined, strokeCol.concat([0.2]));
+		strokeWeight(1);
+		line(-x, -y, x, y);
+		valLabelTheta.html(ceil(degrees(theta)) + ' deg');
 	}
 }
 
 function buildPath() {
-	var res = [];
+	pathPoints = [];
+	pathAngles = [];
 	for (var i = 0; i < TWO_PI * d; i += step) {
-		var r = baseDiam / 4 * cos(k * i);
+		var r = radius / 2 * cos(k * i);
 		var x = r * cos(i);
 		var y = r * sin(i);
 		stroke(6);
-		res.push(createVector(x, y));
+		pathPoints.push(createVector(x, y));
+		pathAngles.push(i);
 	}
-	return res;
 }
 
 function initDOM() {
-	sliderN = createSlider(1, 20, 4, 1);
-	sliderN.position(60, 100);
-	sliderN.size(100);
+
+	var textColor = 'rgb(' + strokeCol.join(',') + ')';
+
+	sliderN = createSlider(1, 10, 4, 1);
+	sliderN.position(controlsOffset, 100);
+	sliderN.size(150);
 	sliderN.style('outline', 'none');
-	sliderD = createSlider(1, 20, 2, 1);
-	sliderD.position(60, 200);
-	sliderD.size(100);
+	sliderD = createSlider(1, 10, 2, 1);
+	sliderD.position(controlsOffset, 200);
+	sliderD.size(150);
 	sliderD.style('outline', 'none');
 	sliderN.changed(initDrawing);
 	sliderD.changed(initDrawing);
@@ -88,18 +129,27 @@ function initDOM() {
 	var labelD = createSpan('d: ');
 	valLabelD = createSpan();
 
-	labelN.position(80, 140);
-	valLabelN.position(110, 140);
+	labelN.position(controlsOffset + 20, 140);
+	valLabelN.position(controlsOffset + 50, 140);
 	labelN.style('font-size', '20px');
 	valLabelN.style('font-size', '20px');
-	labelN.style('color', 'whitesmoke');
-	valLabelN.style('color', 'whitesmoke');
-	labelD.position(80, 240);
-	valLabelD.position(110, 240);
+	labelN.style('color', textColor);
+	valLabelN.style('color', textColor);
+	labelD.position(controlsOffset + 20, 240);
+	valLabelD.position(controlsOffset + 50, 240);
 	labelD.style('font-size', '20px');
 	valLabelD.style('font-size', '20px');
-	labelD.style('color', 'whitesmoke');
-	valLabelD.style('color', 'whitesmoke');
+	labelD.style('color', textColor);
+	valLabelD.style('color', textColor);
+
+	var thetaLabel = createSpan('Theta : ');
+	thetaLabel.position(controlsOffset, 300);
+	thetaLabel.style('color', textColor);
+	thetaLabel.style('font-size', '20px');
+	valLabelTheta = createSpan();
+	valLabelTheta.position(controlsOffset + 70, 300);
+	valLabelTheta.style('color', textColor);
+	valLabelTheta.style('font-size', '20px');
 }
 
 function initDrawing() {
@@ -109,15 +159,16 @@ function initDrawing() {
 	d = sliderD.value();
 	k = n / d;
 	index = 0;
-	pathPoints = buildPath();
+	buildPath();
 	background(bgCol);
 	resetMatrix();
 	translate(width / 2, height / 2);
 	stroke(strokeCol.concat(0.6));
 	noFill();
-	ellipse(0, 0, baseDiam / 2, baseDiam / 2);
+	pathDrawn = [];
 }
 
 function windowResized() {
+	createCanvas(windowWidth, windowHeight);
 	initDrawing();
 }
