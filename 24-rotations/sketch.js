@@ -4,7 +4,7 @@ var _createClass = function () { function defineProperties(target, props) { for 
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
-// $color1: rgba(220, 255, 253, 1);
+// $color1: rgba(250, 25, 13, 1);
 // $color1: rgba(255, 255, 255, 1);
 // $color2: rgba(0, 167, 225, 1);
 // $color3: rgba(0, 23, 31, 1);
@@ -13,21 +13,29 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 
 // const bgCol = [220, 255, 253];
 var bgCol = [0, 23, 31];
-var strokeCol = [220, 255, 253];
+var strokeCol = [250, 25, 13];
 var fillCol = [0, 167, 225];
 
-var bigR = 250;
+var bigR = 150;
 var rotation = 0;
 var rotationInc = 0.01;
 var iterations = 80;
-var decoObjects = [];
-var radVariationFactorMax = 1.61;
-var radVariationFactorMin = 1 / 1.61;
-var radVariationInc = 0.01;
+var decoObjectGroups = [];
 var radVariationFactor = 1.61;
-var radVariationDirection = 1;
+var initialOp = 0.2;
 
 var tracking = false;
+
+var Point = function Point(x, y) {
+	_classCallCheck(this, Point);
+
+	this.x = x;
+	this.y = y;
+};
+
+var sourcePoints = [new Point(-300, -400),
+// new Point(350,350),
+new Point(-120, 400), new Point(350, -100)];
 
 function setup() {
 	createCanvas(windowWidth, windowHeight);
@@ -36,7 +44,7 @@ function setup() {
 	smooth();
 
 	buildDeco();
-	updateAllDecoPos(0, 0);
+	updateAllDecoPos(-80, -120);
 	background(bgCol);
 }
 
@@ -54,35 +62,48 @@ function draw() {
 
 	stroke.apply(undefined, strokeCol.concat([0.1]));
 	// noFill();
-	fill.apply(undefined, fillCol.concat([0.2]));
+	fill.apply(undefined, fillCol.concat([0.1]));
 
-	decoObjects.forEach(function (obj, index) {
-		push();
-		translate(obj.x, obj.y);
-		rotate(rotation * 1.61 * (0.3 + index / decoObjects.length * 2));
-		rect(0, 0, obj.width * radVariationFactor, obj.height * radVariationFactor);
-		// regPolygon(0,0,obj.width*radVariationFactor, 5);
-		pop();
+	decoObjectGroups.forEach(function (g, g_index) {
+		return g.forEach(function (obj, index) {
+			push();
+			translate(sourcePoints[g_index].x, sourcePoints[g_index].y);
+			translate(obj.x, obj.y);
+			rotate(rotation * 1.61 * (0.3 + index / g.length * 2));
+			fill.apply(undefined, fillCol.concat([obj.opacity]));
+			stroke.apply(undefined, strokeCol.concat([obj.opacity]));
+			rect(0, 0, obj.width * radVariationFactor, obj.height * radVariationFactor);
+			pop();
+		});
 	});
 
 	rotation -= rotationInc;
 }
 
 function buildDeco() {
-	var step = TWO_PI / iterations;
-	for (var i = 0; i < iterations; i++) {
-		var vx = cos(i * step);
-		var vy = sin(i * step);
-		var dist = bigR * (i / iterations);
-		var rad = bigR / 1.61 * i / iterations;
-		var obj = new DecoObject(vx * dist, vy * dist, rad, rad, 1);
-		decoObjects.push(obj);
-	}
+	sourcePoints.forEach(function (p) {
+		var decoObjects = [];
+		var step = TWO_PI / iterations;
+		for (var i = 0; i < iterations; i++) {
+			var vx = cos(i * step);
+			var vy = sin(i * step);
+			var dist = bigR * (i / iterations);
+			var rad = bigR / 1.61 * i / iterations;
+			var obj = new DecoObject(vx * dist, vy * dist, rad, rad, initialOp * 0.05 + map(i / (iterations - 1), 0, 1, initialOp * 0.95, 0));
+			decoObjects.push(obj);
+		}
+		decoObjectGroups.push(decoObjects);
+	});
 }
 
 function updateAllDecoPos(currX, currY) {
-	decoObjects.forEach(function (obj, index) {
-		obj.updateDecoPos(currX, currY, index);
+	decoObjectGroups.forEach(function (g, g_index) {
+		return g.forEach(function (obj, index) {
+			var origin = sourcePoints[g_index];
+			var groupX = currX - origin.x;
+			var groupY = currY - origin.y;
+			obj.updateDecoPos(groupX, groupY, index, g.length);
+		});
 	});
 }
 
@@ -101,10 +122,10 @@ var DecoObject = function () {
 
 	_createClass(DecoObject, [{
 		key: "updateDecoPos",
-		value: function updateDecoPos(currX, currY, index) {
+		value: function updateDecoPos(currX, currY, index, total) {
 			var diffX = currX - this.initialX;
 			var diffY = currY - this.initialY;
-			var amount = index / (decoObjects.length - 1);
+			var amount = index / (total - 1);
 			this.x = this.initialX + amount * diffX;
 			this.y = this.initialY + amount * diffY;
 		}
@@ -113,24 +134,13 @@ var DecoObject = function () {
 	return DecoObject;
 }();
 
-function regPolygon(cx, cy, rad, sides) {
-	beginShape();
-	var step = TWO_PI / sides;
-	for (var i = 0; i <= sides; i++) {
-		var x = cos(i * step) * rad;
-		var y = sin(i * step) * rad;
-		vertex(x, y);
-	}
-	endShape();
-}
-
 function mouseMoved() {
 	tracking = true;
 }
 
 function windowResized() {
 	createCanvas(windowWidth, windowHeight);
-	decoObjects = [];
+	decoObjectGroups = [];
 	buildDeco();
-	updateAllDecoPos(0, 0);
+	updateAllDecoPos(-80, -120);
 }
