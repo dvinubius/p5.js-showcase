@@ -32,6 +32,7 @@ function setup() {
 	smooth();
 
 	buildDeco();
+	background(bgCol);
 }
 
 function draw() {
@@ -40,25 +41,18 @@ function draw() {
 
 	translate(width / 2, height / 2);
 
-	// --- Draw big circle
-
-	// noFill();
-	// stroke(strokeCol);
-	// strokeWeight(2);
-	// ellipse(0,0, 2*bigR, 2*bigR);
-
 	// --- Draw along big circle
 
 	rotate(rotation);
 
-	stroke.apply(undefined, strokeCol.concat([0.4]));
+	stroke.apply(undefined, strokeCol.concat([0.1]));
 	// noFill();
 	fill.apply(undefined, fillCol.concat([0.1]));
 
-	decoObjects.forEach(function (obj) {
+	decoObjects.forEach(function (obj, index) {
 		push();
 		translate(obj.x, obj.y);
-		rotate(rotation * 1.61);
+		rotate(rotation * 1.61 * index / decoObjects.length * 2);
 		rect(0, 0, obj.width * radVariationFactor, obj.height * radVariationFactor);
 		pop();
 	});

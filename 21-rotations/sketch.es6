@@ -31,6 +31,7 @@ function setup() {
 	smooth();
 
 	buildDeco();
+	background(bgCol);
 }
 
 function draw() {
@@ -39,25 +40,18 @@ function draw() {
 
 	translate(width/2,height/2);
 
-	// --- Draw big circle
-
-	// noFill();
-	// stroke(strokeCol);
-	// strokeWeight(2);
-	// ellipse(0,0, 2*bigR, 2*bigR);
-
 	// --- Draw along big circle
 
 	rotate(rotation);
 
-	stroke(...strokeCol, 0.4);
+	stroke(...strokeCol, 0.1);
 	// noFill();
 	fill(...fillCol, 0.1);
 
-	decoObjects.forEach(obj => {
+	decoObjects.forEach((obj,index) => {
 		push();
 			translate(obj.x, obj.y);
-			rotate(rotation*1.61);
+			rotate(rotation*1.61*index/decoObjects.length*2);
 			rect(
 				0, 
 				0, 
