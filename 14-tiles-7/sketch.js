@@ -9,13 +9,14 @@ var config = void 0;
 var gridSize = 12;
 
 var levelsPerTile = 3;
-var stopsPerTile = 2;
-var minThickness = 2;
-var maxThickness = 6;
+var stopsPerTile = 3;
+var minThickness = 3;
+var maxThickness = 7;
 
 function setup() {
 	createCanvas(windowWidth, windowHeight);
-	var ts = min(width, height) * 0.7 / gridSize;
+	angleMode(DEGREES);
+	var ts = min(width, height) * 0.6 / gridSize;
 	config = new TileGridConfig(gridSize, // gridSize - # of tiles per side ?
 	ts, // no tileSize - maximum sized, still fitting the screen decently
 	true);
@@ -26,13 +27,9 @@ function setup() {
 function draw() {
 	background(backgroundCol);
 
+	translate(-width * 0.2, -height * 0.05);
+	scale(1.4, 1);
 	tileGrid.applyEach(drawTile);
-
-	// repeat overlapping grid
-	for (var i = 0; i < 1; i++) {
-		createMyTileGrid();
-		tileGrid.applyEach(drawTile);
-	}
 
 	noLoop();
 }
@@ -56,7 +53,6 @@ function createMyTileGrid() {
 
 function drawTile(tile) {
 	strokeWeight(tile.strokeWeight);
-	stroke.apply(undefined, _toConsumableArray(tile.strokeCol));
 
 	var createChangePoints = function createChangePoints(commandVals, stops) {
 		var stepX = tile.size / (stops - 1);
@@ -77,7 +73,34 @@ function drawTile(tile) {
 		}
 
 		var nextP = changePoints[index + 1];
+		var strokeCol = void 0;
+		var strokeColBase = void 0;
+		var desc = p.x < nextP.x;
+		if (desc) {
+			strokeColBase = [90, 50, 250];
+			strokeCol = [].concat(_toConsumableArray(strokeColBase), [0.8]);
+		} else {
+			strokeColBase = [150, 20, 20];
+			strokeCol = [].concat(_toConsumableArray(strokeColBase), [0.6]);
+		}
+		stroke(strokeCol);
 		line(p.x, p.y, nextP.x, nextP.y);
+
+		var iterations = 64;
+		for (var i = 1; i <= iterations; i++) {
+			push();
+			var diffX = nextP.x - p.x;
+			var diffY = nextP.y - p.y;
+			if (desc) {
+				translate(0, i);
+			} else {
+				translate(0, i);
+			}
+			strokeWeight(1);
+			stroke.apply(undefined, _toConsumableArray(strokeColBase).concat([0.006 * (iterations - i)]));
+			line(p.x, p.y, p.x + diffX, p.y + diffY);
+			pop();
+		}
 	});
 }
 
