@@ -16,7 +16,7 @@ var bgCol = [0, 23, 31];
 var strokeCol = [250, 25, 13];
 var fillCol = [0, 167, 225];
 
-var bigR = 150;
+var bigR = 200;
 var rotation = 0;
 var rotationInc = 0.01;
 var iterations = 80;

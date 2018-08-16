@@ -11,7 +11,7 @@ const strokeCol = [250, 25, 13];
 const fillCol = [0, 167, 225];
 
 
-let bigR = 150;
+let bigR = 200;
 let rotation = 0;
 let rotationInc = 0.01;
 let iterations = 80;
