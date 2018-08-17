@@ -13,32 +13,25 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 // $color5: rgba(109, 104, 117, 1);
 // $color6: rgba(36, 15, 4,1);
 
-var bgCol = [109, 104, 117];
-var strokeColors = [[36, 15, 4], [181, 131, 141], [255, 205, 178], [255, 180, 162], [229, 152, 155], [36, 15, 4]];
+// const bgCol = [109, 104, 117];
+var bgCol = [255, 205, 178];
+var strokeColors = [[36, 15, 4], [181, 131, 141], [109, 104, 117], [255, 180, 162], [229, 152, 155], [255, 180, 162], [229, 152, 155]];
 
-var basicLength = 50;
-var lengthVariation = 20;
+var basicLength = 60;
+var lengthVariation = 30;
 var weightRange = [1, 2];
-var howMany = 100;
-var initialOpacity = 0.6;
+var howMany = 65;
+var initialOpacity = 0.7;
 var dottedLength = 16;
 
 var crossers = void 0;
 
 function setup() {
-	createCanvas(windowWidth * 0.6, windowHeight * 0.6);
+	createCanvas(windowWidth * 0.7, windowHeight * 0.6);
 	background(bgCol);
 	colorMode(RGB, 255, 255, 255, 1);
 
 	createCrossers();
-	// setInterval(() => {
-	// 	const crosser = random(crossers);
-	// 	if (crosser.scaled === 1) {
-	// 		crosser.scaled = 0.5
-	// 	} else {
-	// 		crosser.scaled = 1;
-	// 	}
-	// }, 1000);
 }
 
 function draw() {
@@ -46,14 +39,10 @@ function draw() {
 		crosser.draw();
 		crosser.update();
 	});
-	stroke(181, 131, 141);
-	strokeWeight(2);
-	noFill();
-	// rect(1,1,width-2,height-2);
 }
 
 function windowResized() {
-	resizeCanvas(windowWidth * 0.8, windowHeight * 0.8);
+	resizeCanvas(windowWidth * 0.6, windowHeight * 0.6);
 	background(bgCol);
 	createCrossers();
 }
@@ -111,7 +100,7 @@ var Crosser = function () {
 	}, {
 		key: "goAgain",
 		value: function goAgain() {
-			var distBack = floor(random(5, 13));
+			var distBack = floor(random(5, 19));
 			this.x -= this.vx * distBack;
 			this.y -= this.vy * distBack;
 
